@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html>
 <head>
   <meta charset="utf-8">
@@ -6,6 +6,41 @@
   <title>StayLocal Admin</title>
 </head>
 <body>
+  <script>
+    window.CMS_MANUAL_INIT = true;
+  </script>
   <script src="https://unpkg.com/decap-cms@^3.0.0/dist/decap-cms.js"></script>
+  <script>
+    CMS.init({
+      config: {
+        backend: {
+          name: 'github',
+          repo: 'Ryuga1981/Staylocal',
+          branch: 'main'
+        },
+        media_folder: 'images',
+        public_folder: '/images',
+        collections: [
+          {
+            name: 'listings',
+            label: 'Listings',
+            folder: '_listings',
+            create: true,
+            fields: [
+              { label: 'Title', name: 'title', widget: 'string' },
+              { label: 'Location', name: 'location', widget: 'string' },
+              { label: 'Price per night (IDR)', name: 'price', widget: 'number' },
+              { label: 'Bedrooms', name: 'bedrooms', widget: 'number' },
+              { label: 'Guests', name: 'guests', widget: 'number' },
+              { label: 'Rating', name: 'rating', widget: 'number' },
+              { label: 'Photo', name: 'photo', widget: 'image' },
+              { label: 'Description', name: 'description', widget: 'text' },
+              { label: 'Available', name: 'available', widget: 'boolean' }
+            ]
+          }
+        ]
+      }
+    });
+  </script>
 </body>
 </html>
