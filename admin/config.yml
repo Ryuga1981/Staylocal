@@ -1,0 +1,23 @@
+backend:
+  name: github
+  repo: Ryuga1981/Staylocal
+  branch: main
+
+media_folder: images
+public_folder: /images
+
+collections:
+  - name: listings
+    label: Listings
+    folder: _listings
+    create: true
+    fields:
+      - { label: Title, name: title, widget: string }
+      - { label: Location, name: location, widget: string }
+      - { label: Price per night (IDR), name: price, widget: number }
+      - { label: Bedrooms, name: bedrooms, widget: number }
+      - { label: Guests, name: guests, widget: number }
+      - { label: Rating, name: rating, widget: number }
+      - { label: Photo, name: photo, widget: image }
+      - { label: Description, name: description, widget: text }
+      - { label: Available, name: available, widget: boolean }
