@@ -1316,57 +1316,68 @@ for (let i = 0; i < 24; i++) {
   mosaic.appendChild(tile);
 }
 
-// ── LISTING DATA ──
-const listings = [
-  {
-    id: 1,
-    title: 'Villa Tirta Ubud',
-    location: 'Ubud, Bali',
-    type: 'Entire villa · 4 beds · 2 baths',
-    priceIDR: 1850000,
-    rating: 4.96,
-    reviews: 142,
-    badge: 'Guest fav.',
-    badgeClass: 'badge-fav',
-    photo: 'https://images.unsplash.com/photo-1582268611958-ebfd161ef9cf?w=600&q=80',
-  },
-  {
-    id: 2,
-    title: 'Seminyak Beachside Studio',
-    location: 'Seminyak, Bali',
-    type: 'Private room · 1 bed · 1 bath',
-    priceIDR: 480000,
-    rating: 4.88,
-    reviews: 87,
-    badge: 'Verified',
-    badgeClass: 'badge-verified',
-    photo: 'https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=600&q=80',
-  },
-  {
-    id: 3,
-    title: 'Canggu Pool Villa C8',
-    location: 'Canggu, Bali',
-    type: 'Entire villa · 5 beds · 3 baths',
-    priceIDR: 3200000,
-    rating: 4.78,
-    reviews: 161,
-    badge: 'New',
-    badgeClass: 'badge-new',
-    photo: 'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=600&q=80',
-  },
-  {
-    id: 4,
-    title: 'Rice Field View Retreat',
-    location: 'Tegallalang, Bali',
-    type: 'Entire home · 2 beds · 1 bath',
-    priceIDR: 920000,
-    rating: 4.92,
-    reviews: 53,
-    badge: 'Guest fav.',
-    badgeClass: 'badge-fav',
-    photo: 'https://images.unsplash.com/photo-1537996194471-e657df975ab4?w=600&q=80',
-  },
-];
+// ── LISTING DATA — fetched live from GitHub ──
+let listings = [];
+
+function parseFrontmatter(text) {
+  const match = text.match(/^---\n([\s\S]*?)\n---/);
+  if (!match) return {};
+  const obj = {};
+  match[1].split('\n').forEach(line => {
+    const [key, ...rest] = line.split(':');
+    if (key && rest.length) {
+      let val = rest.join(':').trim();
+      if (val === 'true') val = true;
+      else if (val === 'false') val = false;
+      else if (!isNaN(val) && val !== '') val = Number(val);
+      obj[key.trim()] = val;
+    }
+  });
+  return obj;
+}
+
+async function fetchListings() {
+  const grid = document.getElementById('listingsGrid');
+  grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:48px;color:var(--ink-lt)">Loading listings…</div>';
+  try {
+    // Fetch listing files from GitHub API
+    const res = await fetch('https://api.github.com/repos/Ryuga1981/Staylocal/contents/_listings');
+    if (!res.ok) throw new Error('No listings yet');
+    const files = await res.json();
+
+    const fetched = await Promise.all(files.map(async file => {
+      const r = await fetch(file.download_url);
+      const text = await r.text();
+      const data = parseFrontmatter(text);
+      return data;
+    }));
+
+    // Filter only available listings
+    listings = fetched.filter(l => l.available !== false && l.title);
+
+    if (listings.length === 0) {
+      grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:48px;color:var(--ink-lt)">No listings yet — add one from the admin panel!</div>';
+      return;
+    }
+
+    renderListings();
+  } catch(e) {
+    // Fallback to sample listings if fetch fails
+    listings = [
+      {
+        title: 'Villa Tirta Ubud',
+        location: 'Ubud, Bali',
+        bedrooms: 4,
+        guests: 8,
+        price: 1850000,
+        rating: 4.96,
+        photo: 'https://images.unsplash.com/photo-1582268611958-ebfd161ef9cf?w=600&q=80',
+        description: 'Beautiful villa with rice field views',
+      },
+    ];
+    renderListings();
+  }
+}
 
 const currencies = {
   IDR: { symbol: 'Rp', rate: 1, decimals: 0, locale: 'id-ID', flag: '🇮🇩' },
@@ -1395,24 +1406,30 @@ function formatPrice(priceIDR, currency) {
 
 function renderListings() {
   const grid = document.getElementById('listingsGrid');
+  // Photo: if from CMS it starts with /images/, serve from Netlify
+  const getPhoto = (l) => {
+    if (!l.photo) return 'https://images.unsplash.com/photo-1582268611958-ebfd161ef9cf?w=600&q=80';
+    if (l.photo.startsWith('/images/')) return 'https://staylocalzahra.netlify.app' + l.photo;
+    return l.photo;
+  };
   grid.innerHTML = listings.map(l => `
     <div class="listing-card reveal" onclick="alert('Booking flow coming soon!')">
       <div class="card-photo">
-        <img src="${l.photo}" alt="${l.title}" loading="lazy">
-        <span class="card-badge ${l.badgeClass}">${l.badge}</span>
+        <img src="${getPhoto(l)}" alt="${l.title}" loading="lazy" onerror="this.src='https://images.unsplash.com/photo-1582268611958-ebfd161ef9cf?w=600&q=80'">
+        <span class="card-badge badge-fav">Listed</span>
         <button class="card-wishlist" onclick="event.stopPropagation();this.textContent=this.textContent==='♡'?'♥':'♡'" aria-label="Save">♡</button>
       </div>
       <div class="card-body">
-        <div class="card-loc">${l.location}</div>
+        <div class="card-loc">${l.location || ''}</div>
         <div class="card-title">${l.title}</div>
-        <div class="card-meta">${l.type}</div>
+        <div class="card-meta">${l.bedrooms || '?'} beds · ${l.guests || '?'} guests max</div>
         <div class="card-footer">
           <div class="card-price">
-            <span class="card-price-main" data-idr="${l.priceIDR}">${formatPrice(l.priceIDR, currentCurrency)}</span>
+            <span class="card-price-main" data-idr="${l.price || 0}">${formatPrice(l.price || 0, currentCurrency)}</span>
             <span class="card-price-unit">per night</span>
           </div>
           <div class="card-rating">
-            <span class="star">★</span> ${l.rating} <span style="color:var(--ink-lt)">(${l.reviews})</span>
+            <span class="star">★</span> ${l.rating || 'New'}
           </div>
         </div>
       </div>
@@ -1537,10 +1554,8 @@ function observeReveal() {
 }
 
 // Init
-renderListings();
+fetchListings();
 observeReveal();
 </script>
 </body>
 </html>
-   
- 
