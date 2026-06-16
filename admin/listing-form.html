@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Add Listing — StayLocal Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@400;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="admin-style.css">
+<script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
+</head>
+<body>
+<div class="admin-shell">
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo">Stay<span>Local</span></div>
+    <nav class="sidebar-nav">
+      <a href="dashboard.html" class="sidebar-link"><span class="sidebar-icon">📊</span> Dashboard</a>
+      <a href="listings.html" class="sidebar-link"><span class="sidebar-icon">🏠</span> Listings</a>
+      <a href="listing-form.html" class="sidebar-link active"><span class="sidebar-icon">➕</span> Add Listing</a>
+      <a href="calendar.html" class="sidebar-link"><span class="sidebar-icon">📅</span> Availability</a>
+      <a href="promotions.html" class="sidebar-link"><span class="sidebar-icon">🏷️</span> Promotions</a>
+      <a href="photos.html" class="sidebar-link"><span class="sidebar-icon">🖼️</span> Photos</a>
+      <a href="settings.html" class="sidebar-link"><span class="sidebar-icon">⚙️</span> Settings</a>
+      <a href="https://staylocalzahra.netlify.app" target="_blank" class="sidebar-link"><span class="sidebar-icon">🔗</span> View Live Site</a>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="sidebar-user" id="sidebarUser"></div>
+      <button class="sidebar-logout" onclick="doLogout()">Log out</button>
+    </div>
+  </aside>
+
+  <div class="main">
+    <div class="topbar">
+      <div style="display:flex;align-items:center;gap:12px">
+        <button class="menu-toggle" onclick="document.getElementById('sidebar').classList.toggle('open')">☰</button>
+        <div class="topbar-title" id="formTitle">Add Listing</div>
+      </div>
+      <div style="display:flex;gap:10px">
+        <a href="listings.html" class="btn btn-outline">Cancel</a>
+        <button class="btn btn-coral" onclick="submitForm()">💾 Save Listing</button>
+      </div>
+    </div>
+
+    <div class="content" style="max-width:900px">
+
+      <div class="card" style="margin-bottom:20px">
+        <h3 style="font-family:'Fraunces',serif;font-size:16px;margin-bottom:18px">Basic Info</h3>
+        <div class="field-group">
+          <label class="field-label">Title</label>
+          <input id="f_title" class="field-input" placeholder="e.g. Villa Zahra de'Aurora">
+        </div>
+        <div class="field-row-2">
+          <div class="field-group">
+            <label class="field-label">Location (city/area)</label>
+            <input id="f_location" class="field-input" placeholder="e.g. Bandung" list="locationSuggestions">
+            <datalist id="locationSuggestions">
+              <option value="Bali"></option><option value="Bandung"></option>
+              <option value="Bangkok"></option><option value="Phuket"></option>
+              <option value="Hanoi"></option><option value="Manila"></option>
+              <option value="Kuala Lumpur"></option><option value="Singapore"></option>
+            </datalist>
+          </div>
+          <div class="field-group">
+            <label class="field-label">Region shown to guests</label>
+            <input id="f_region" class="field-input" placeholder="auto-filled from map pin" readonly>
+            <div class="field-hint">Guests see only this general region — exact address stays private.</div>
+          </div>
+        </div>
+        <div class="field-group">
+          <label class="field-label">Description</label>
+          <textarea id="f_description" class="field-textarea" placeholder="Describe the property…"></textarea>
+        </div>
+      </div>
+
+      <div class="card" style="margin-bottom:20px">
+        <h3 style="font-family:'Fraunces',serif;font-size:16px;margin-bottom:18px">Capacity & Pricing</h3>
+        <div class="field-row">
+          <div class="field-group">
+            <label class="field-label">Bedrooms</label>
+            <input id="f_bedrooms" type="number" min="0" class="field-input" value="1">
+          </div>
+          <div class="field-group">
+            <label class="field-label">Bathrooms</label>
+            <input id="f_bathrooms" type="number" min="0" step="0.5" class="field-input" value="1">
+          </div>
+          <div class="field-group">
+            <label class="field-label">Max Guests</label>
+            <input id="f_guests" type="number" min="1" class="field-input" value="2">
+          </div>
+        </div>
+        <div class="field-row-2">
+          <div class="field-group">
+            <label class="field-label">Price per night (IDR)</label>
+            <div class="input-prefix"><span>Rp</span><input id="f_price" type="number" min="0" class="field-input" placeholder="1500000"></div>
+          </div>
+          <div class="field-group">
+            <label class="field-label">Rating</label>
+            <input id="f_rating" type="number" min="0" max="5" step="0.01" class="field-input" placeholder="4.9">
+          </div>
+        </div>
+        <div class="field-group" style="display:flex;align-items:center;gap:12px">
+          <div class="toggle"><input id="f_available" type="checkbox" checked><span class="toggle-track" onclick="document.getElementById('f_available').click()"></span></div>
+          <label class="field-label" style="margin:0">Listed (visible to guests)</label>
+        </div>
+      </div>
+
+      <div class="card" style="margin-bottom:20px">
+        <h3 style="font-family:'Fraunces',serif;font-size:16px;margin-bottom:18px">Amenities</h3>
+        <div class="checkbox-grid" id="amenitiesGrid"></div>
+      </div>
+
+      <div class="card" style="margin-bottom:20px">
+        <h3 style="font-family:'Fraunces',serif;font-size:16px;margin-bottom:6px">Location Pin</h3>
+        <p style="font-size:13px;color:var(--ink-lt);margin-bottom:14px">Click the map to drop a pin at the exact property location. Guests will only ever see a ~1km radius circle, never the exact pin.</p>
+        <input id="mapSearch" class="field-input" placeholder="Search an address or area…" style="margin-bottom:10px">
+        <div id="mapPicker"></div>
+        <div class="map-radius-note">📍 Pin: <span id="pinCoords">Not set yet — click the map above</span></div>
+      </div>
+
+      <div class="card" style="margin-bottom:20px">
+        <h3 style="font-family:'Fraunces',serif;font-size:16px;margin-bottom:6px">Photos</h3>
+        <p style="font-size:13px;color:var(--ink-lt);margin-bottom:14px">Select a category, then upload one or more photos for that category. Repeat for each room/area.</p>
+        <div class="photo-category-tabs" id="categoryTabs"></div>
+        <div class="dropzone" id="dropzone">
+          <div class="dropzone-icon">📤</div>
+          <div style="font-weight:600;margin-bottom:4px">Drag & drop photos here, or click to browse</div>
+          <div style="font-size:12px;color:var(--ink-lt)">Uploading to: <strong id="currentCatLabel">outdoor</strong> — supports multiple files</div>
+          <input type="file" id="fileInput" accept="image/*" multiple style="display:none">
+        </div>
+        <div style="margin-top:20px">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+            <strong style="font-size:13px">All uploaded photos</strong>
+            <span style="font-size:12px;color:var(--ink-lt)" id="photoCount">0 photos</span>
+          </div>
+          <div class="photo-grid" id="photoGrid"></div>
+        </div>
+      </div>
+
+      <div style="display:flex;justify-content:flex-end;gap:10px;margin-bottom:40px">
+        <a href="listings.html" class="btn btn-outline">Cancel</a>
+        <button class="btn btn-coral" onclick="submitForm()">💾 Save Listing</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="admin.js"></script>
+<script src="https://maps.googleapis.com/maps/api/js?key=YOUR_GOOGLE_MAPS_API_KEY&callback=initMap" async defer></script>
+<script>
+requireAuth();
+
+let editingFile = null;
+let editingSha = null;
+let photos = []; // {url, category, file?, localPreview?}
+let activeCategory = 'outdoor';
+let pin = { lat: null, lng: null };
+let map, marker, radiusCircle;
+
+const params = new URLSearchParams(window.location.search);
+if (params.get('file')) editingFile = params.get('file');
+
+/* ── AMENITIES ── */
+function renderAmenities(selected=[]){
+  const grid = document.getElementById('amenitiesGrid');
+  grid.innerHTML = AMENITIES_LIST.map(a => `
+    <label class="checkbox-item ${selected.includes(a)?'checked':''}" data-amenity="${a}">
+      <input type="checkbox" ${selected.includes(a)?'checked':''}>
+      <span>${a}</span>
+    </label>
+  `).join('');
+  grid.querySelectorAll('.checkbox-item').forEach(item => {
+    item.addEventListener('click', e => {
+      e.preventDefault();
+      const input = item.querySelector('input');
+      input.checked = !input.checked;
+      item.classList.toggle('checked', input.checked);
+    });
+  });
+}
+function getSelectedAmenities(){
+  return [...document.querySelectorAll('#amenitiesGrid .checkbox-item.checked')].map(el => el.dataset.amenity);
+}
+
+/* ── PHOTO CATEGORIES ── */
+function renderCategoryTabs(){
+  const tabs = document.getElementById('categoryTabs');
+  tabs.innerHTML = PHOTO_CATEGORIES.map(c => `
+    <button class="photo-cat-tab ${c===activeCategory?'active':''}" data-cat="${c}">${c}</button>
+  `).join('');
+  tabs.querySelectorAll('.photo-cat-tab').forEach(btn => {
+    btn.addEventListener('click', () => {
+      activeCategory = btn.dataset.cat;
+      renderCategoryTabs();
+      document.getElementById('currentCatLabel').textContent = activeCategory;
+    });
+  });
+  document.getElementById('currentCatLabel').textContent = activeCategory;
+}
+
+function renderPhotoGrid(){
+  const grid = document.getElementById('photoGrid');
+  document.getElementById('photoCount').textContent = `${photos.length} photo${photos.length!==1?'s':''}`;
+  if (!photos.length){
+    grid.innerHTML = '<div class="empty-state" style="grid-column:1/-1;padding:30px"><div class="empty-state-icon">🖼️</div>No photos yet</div>';
+    return;
+  }
+  grid.innerHTML = photos.map((p, i) => `
+    <div class="photo-thumb">
+      <img src="${p.localPreview || photoUrl(p.url)}">
+      <span class="photo-thumb-cat">${p.category}</span>
+      <button class="photo-thumb-remove" onclick="removePhoto(${i})">✕</button>
+    </div>
+  `).join('');
+}
+function removePhoto(i){ photos.splice(i,1); renderPhotoGrid(); }
+
+/* ── DROPZONE / UPLOAD ── */
+const dropzone = document.getElementById('dropzone');
+const fileInput = document.getElementById('fileInput');
+dropzone.addEventListener('click', () => fileInput.click());
+dropzone.addEventListener('dragover', e => { e.preventDefault(); dropzone.classList.add('dragover'); });
+dropzone.addEventListener('dragleave', () => dropzone.classList.remove('dragover'));
+dropzone.addEventListener('drop', e => {
+  e.preventDefault(); dropzone.classList.remove('dragover');
+  handleFiles(e.dataTransfer.files);
+});
+fileInput.addEventListener('change', e => handleFiles(e.target.files));
+
+function handleFiles(fileList){
+  [...fileList].forEach(file => {
+    if (!file.type.startsWith('image/')) return;
+    const localPreview = URL.createObjectURL(file);
+    photos.push({ file, category: activeCategory, localPreview, url: null });
+  });
+  renderPhotoGrid();
+}
+
+async function uploadPendingPhotos(){
+  const pending = photos.filter(p => p.file && !p.url);
+  for (const p of pending){
+    const path = await uploadImage(p.file);
+    p.url = path;
+    delete p.file;
+    delete p.localPreview;
+  }
+}
+
+/* ── MAP ── */
+function initMap(){
+  const defaultPos = { lat: -6.9034, lng: 107.6188 }; // Bandung default
+  map = new google.maps.Map(document.getElementById('mapPicker'), {
+    center: defaultPos, zoom: 12,
+  });
+  map.addListener('click', e => setPin(e.latLng.lat(), e.latLng.lng()));
+
+  const searchInput = document.getElementById('mapSearch');
+  const autocomplete = new google.maps.places.Autocomplete(searchInput);
+  autocomplete.bindTo('bounds', map);
+  autocomplete.addListener('place_changed', () => {
+    const place = autocomplete.getPlace();
+    if (!place.geometry) return;
+    map.setCenter(place.geometry.location);
+    map.setZoom(14);
+    setPin(place.geometry.location.lat(), place.geometry.location.lng());
+    document.getElementById('f_region').value = place.formatted_address ? place.formatted_address.split(',').slice(-2).join(',').trim() : '';
+  });
+
+  if (pin.lat) setPin(pin.lat, pin.lng);
+}
+
+function setPin(lat, lng){
+  pin = { lat, lng };
+  if (marker) marker.setMap(null);
+  if (radiusCircle) radiusCircle.setMap(null);
+  marker = new google.maps.Marker({ position: { lat, lng }, map, title: 'Exact location (private)' });
+  radiusCircle = new google.maps.Circle({
+    center: { lat, lng }, radius: 1000, map,
+    fillColor: '#0D5C63', fillOpacity: 0.12, strokeColor: '#0D5C63', strokeOpacity: 0.5, strokeWeight: 1.5,
+  });
+  document.getElementById('pinCoords').textContent = `${lat.toFixed(5)}, ${lng.toFixed(5)} (1km radius shown to guests)`;
+}
+
+// Fallback if Google Maps key isn't configured yet
+window.addEventListener('load', () => {
+  setTimeout(() => {
+    if (typeof google === 'undefined'){
+      document.getElementById('mapPicker').innerHTML = `
+        <div style="display:flex;align-items:center;justify-content:center;height:100%;background:#f5f5f0;border-radius:var(--r-md);flex-direction:column;gap:8px;padding:20px;text-align:center">
+          <div style="font-size:28px">🗺️</div>
+          <div style="font-size:13px;color:var(--ink-lt)">Add your Google Maps API key in settings to enable the map picker.<br>For now, enter coordinates manually below.</div>
+          <div style="display:flex;gap:8px;margin-top:8px;width:100%;max-width:300px">
+            <input id="manualLat" class="field-input" placeholder="Latitude" style="font-size:12px">
+            <input id="manualLng" class="field-input" placeholder="Longitude" style="font-size:12px">
+          </div>
+          <button class="btn btn-outline btn-sm" onclick="setPin(parseFloat(document.getElementById('manualLat').value),parseFloat(document.getElementById('manualLng').value))">Set Pin</button>
+        </div>`;
+    }
+  }, 2500);
+});
+
+/* ── LOAD EXISTING (edit mode) ── */
+async function loadForEdit(){
+  if (!editingFile) { renderAmenities(); renderCategoryTabs(); renderPhotoGrid(); return; }
+  document.getElementById('formTitle').textContent = 'Edit Listing';
+  showLoading();
+  try {
+    const listings = await getListings();
+    const l = listings.find(x => x._filename === editingFile);
+    if (!l) throw new Error('Listing not found');
+    editingSha = l._sha;
+    document.getElementById('f_title').value = l.title || '';
+    document.getElementById('f_location').value = l.location || '';
+    document.getElementById('f_region').value = l.region || '';
+    document.getElementById('f_description').value = l._body || l.description || '';
+    document.getElementById('f_bedrooms').value = l.bedrooms || 1;
+    document.getElementById('f_bathrooms').value = l.bathrooms || 1;
+    document.getElementById('f_guests').value = l.guests || 2;
+    document.getElementById('f_price').value = l.price || '';
+    document.getElementById('f_rating').value = l.rating || '';
+    document.getElementById('f_available').checked = l.available !== false;
+    if (l.lat && l.lng){ pin = { lat: Number(l.lat), lng: Number(l.lng) }; }
+    photos = (l.photos || []).map(p => ({ url: p.url, category: p.category || 'outdoor' }));
+    renderAmenities(l.amenities || []);
+    renderCategoryTabs();
+    renderPhotoGrid();
+  } catch(e){
+    toast('Failed to load listing: ' + e.message, 'error');
+    renderAmenities(); renderCategoryTabs(); renderPhotoGrid();
+  }
+  hideLoading();
+}
+
+/* ── SUBMIT ── */
+async function submitForm(){
+  const title = document.getElementById('f_title').value.trim();
+  const price = Number(document.getElementById('f_price').value);
+  if (!title) return toast('Title is required', 'error');
+  if (!price) return toast('Price is required', 'error');
+
+  showLoading();
+  try {
+    await uploadPendingPhotos();
+    const listing = {
+      title,
+      location: document.getElementById('f_location').value.trim(),
+      region: document.getElementById('f_region').value.trim(),
+      lat: pin.lat, lng: pin.lng,
+      description: document.getElementById('f_description').value.trim(),
+      bedrooms: Number(document.getElementById('f_bedrooms').value),
+      bathrooms: Number(document.getElementById('f_bathrooms').value),
+      guests: Number(document.getElementById('f_guests').value),
+      price,
+      rating: Number(document.getElementById('f_rating').value) || 0,
+      available: document.getElementById('f_available').checked,
+      amenities: getSelectedAmenities(),
+      photos: photos.map(p => ({ url: p.url, category: p.category })),
+      _filename: editingFile,
+      _sha: editingSha,
+    };
+    await saveListing(listing);
+    toast('Listing saved!', 'success');
+    setTimeout(() => window.location.href = 'listings.html', 800);
+  } catch(e){
+    toast('Failed to save: ' + e.message, 'error');
+  }
+  hideLoading();
+}
+
+loadForEdit();
+</script>
+</body>
+</html>

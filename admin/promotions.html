@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Promotions — StayLocal Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@400;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="admin-style.css">
+<script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
+</head>
+<body>
+<div class="admin-shell">
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo">Stay<span>Local</span></div>
+    <nav class="sidebar-nav">
+      <a href="dashboard.html" class="sidebar-link"><span class="sidebar-icon">📊</span> Dashboard</a>
+      <a href="listings.html" class="sidebar-link"><span class="sidebar-icon">🏠</span> Listings</a>
+      <a href="listing-form.html" class="sidebar-link"><span class="sidebar-icon">➕</span> Add Listing</a>
+      <a href="calendar.html" class="sidebar-link"><span class="sidebar-icon">📅</span> Availability</a>
+      <a href="promotions.html" class="sidebar-link active"><span class="sidebar-icon">🏷️</span> Promotions</a>
+      <a href="photos.html" class="sidebar-link"><span class="sidebar-icon">🖼️</span> Photos</a>
+      <a href="settings.html" class="sidebar-link"><span class="sidebar-icon">⚙️</span> Settings</a>
+      <a href="https://staylocalzahra.netlify.app" target="_blank" class="sidebar-link"><span class="sidebar-icon">🔗</span> View Live Site</a>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="sidebar-user" id="sidebarUser"></div>
+      <button class="sidebar-logout" onclick="doLogout()">Log out</button>
+    </div>
+  </aside>
+
+  <div class="main">
+    <div class="topbar">
+      <div style="display:flex;align-items:center;gap:12px">
+        <button class="menu-toggle" onclick="document.getElementById('sidebar').classList.toggle('open')">☰</button>
+        <div class="topbar-title">Promotions</div>
+      </div>
+    </div>
+
+    <div class="content" style="max-width:760px">
+      <div class="card" style="margin-bottom:20px">
+        <h3 style="font-family:'Fraunces',serif;font-size:16px;margin-bottom:18px">Create Promotion</h3>
+
+        <div class="field-group">
+          <label class="field-label">Listing</label>
+          <select id="promoListing" class="field-select"></select>
+        </div>
+
+        <div class="field-row-2">
+          <div class="field-group">
+            <label class="field-label">Start date</label>
+            <input id="promoStart" type="date" class="field-input">
+          </div>
+          <div class="field-group">
+            <label class="field-label">End date</label>
+            <input id="promoEnd" type="date" class="field-input">
+          </div>
+        </div>
+
+        <div class="field-row-2">
+          <div class="field-group">
+            <label class="field-label">Discount %</label>
+            <input id="promoDiscount" type="number" min="0" max="90" class="field-input" placeholder="e.g. 15">
+            <div class="field-hint">Guests will see the original price struck through.</div>
+          </div>
+          <div class="field-group">
+            <label class="field-label">Cashback %</label>
+            <input id="promoCashback" type="number" min="0" max="50" class="field-input" placeholder="e.g. 5">
+            <div class="field-hint">Shown under subtotal as potential cashback at checkout.</div>
+          </div>
+        </div>
+
+        <button class="btn btn-coral" onclick="addPromotion()">+ Add Promotion</button>
+      </div>
+
+      <div class="card">
+        <h3 style="font-family:'Fraunces',serif;font-size:16px;margin-bottom:16px">Active & Upcoming Promotions</h3>
+        <table class="table">
+          <thead><tr><th>Listing</th><th>Dates</th><th>Discount</th><th>Cashback</th><th>Status</th><th></th></tr></thead>
+          <tbody id="promoTable"><tr><td colspan="6" style="text-align:center;padding:30px;color:var(--ink-lt)">Loading…</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="admin.js"></script>
+<script>
+requireAuth();
+let allListings = [];
+
+async function init(){
+  showLoading();
+  try {
+    allListings = await getListings();
+    const sel = document.getElementById('promoListing');
+    sel.innerHTML = allListings.map(l => `<option value="${l._filename}">${l.title}</option>`).join('');
+    renderPromoTable();
+  } catch(e){
+    toast('Failed to load: ' + e.message, 'error');
+  }
+  hideLoading();
+}
+
+function renderPromoTable(){
+  const todayStr = new Date().toISOString().slice(0,10);
+  const rows = [];
+  allListings.forEach(l => {
+    (l.promotions||[]).forEach((p, idx) => {
+      let status = 'badge-amber', label = 'Upcoming';
+      if (p.end < todayStr){ status='badge-red'; label='Expired'; }
+      else if (p.start <= todayStr && p.end >= todayStr){ status='badge-green'; label='Active'; }
+      rows.push({ listing: l, filename: l._filename, idx, p, status, label });
+    });
+  });
+  const tbody = document.getElementById('promoTable');
+  if (!rows.length){
+    tbody.innerHTML = '<tr><td colspan="6"><div class="empty-state"><div class="empty-state-icon">🏷️</div>No promotions created yet.</div></td></tr>';
+    return;
+  }
+  tbody.innerHTML = rows.map(r => `
+    <tr>
+      <td style="font-weight:600">${r.listing.title}</td>
+      <td>${r.p.start} → ${r.p.end}</td>
+      <td><span class="badge badge-teal">${r.p.discountPercent}% off</span></td>
+      <td><span class="badge badge-amber">${r.p.cashbackPercent}% cashback</span></td>
+      <td><span class="badge ${r.status}">${r.label}</span></td>
+      <td><button class="btn btn-danger btn-sm" onclick="removePromo('${r.filename}', ${r.idx})">Remove</button></td>
+    </tr>
+  `).join('');
+}
+
+async function addPromotion(){
+  const filename = document.getElementById('promoListing').value;
+  const start = document.getElementById('promoStart').value;
+  const end = document.getElementById('promoEnd').value;
+  const discountPercent = Number(document.getElementById('promoDiscount').value);
+  const cashbackPercent = Number(document.getElementById('promoCashback').value) || 0;
+
+  if (!start || !end) return toast('Select start and end dates', 'error');
+  if (start > end) return toast('Start date must be before end date', 'error');
+  if (!discountPercent && !cashbackPercent) return toast('Set a discount or cashback %', 'error');
+
+  const listing = allListings.find(l => l._filename === filename);
+  listing.promotions = listing.promotions || [];
+  listing.promotions.push({ start, end, discountPercent, cashbackPercent });
+
+  showLoading();
+  try {
+    await saveListing(listing);
+    toast('Promotion added!', 'success');
+    renderPromoTable();
+    document.getElementById('promoStart').value = '';
+    document.getElementById('promoEnd').value = '';
+    document.getElementById('promoDiscount').value = '';
+    document.getElementById('promoCashback').value = '';
+  } catch(e){
+    toast('Failed to save: ' + e.message, 'error');
+  }
+  hideLoading();
+}
+
+async function removePromo(filename, idx){
+  const listing = allListings.find(l => l._filename === filename);
+  listing.promotions.splice(idx, 1);
+  showLoading();
+  try {
+    await saveListing(listing);
+    toast('Promotion removed', 'success');
+    renderPromoTable();
+  } catch(e){
+    toast('Failed: ' + e.message, 'error');
+  }
+  hideLoading();
+}
+
+init();
+</script>
+</body>
+</html>

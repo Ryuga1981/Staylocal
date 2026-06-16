@@ -1,46 +1,39 @@
-﻿<!DOCTYPE html>
-<html>
+<!DOCTYPE html>
+<html lang="en">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>StayLocal Admin</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>StayLocal Admin — Login</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@400;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="admin-style.css">
+<script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
+<style>
+  body{display:flex;align-items:center;justify-content:center;min-height:100vh;background:linear-gradient(135deg,#0D5C63 0%,#12110F 100%)}
+  .login-card{background:var(--white);border-radius:var(--r-lg);box-shadow:var(--shadow-lg);padding:48px 40px;max-width:380px;width:90%;text-align:center}
+  .login-logo{font-family:'Fraunces',serif;font-size:28px;font-weight:700;color:var(--teal);margin-bottom:6px}
+  .login-logo span{color:var(--coral)}
+  .login-sub{font-size:13px;color:var(--ink-lt);margin-bottom:32px}
+</style>
 </head>
 <body>
-  <script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
-  <script>
-    window.CMS_MANUAL_INIT = true;
-  </script>
-  <script src="https://unpkg.com/decap-cms@^3.0.0/dist/decap-cms.js"></script>
-  <script>
-    CMS.init({
-      config: {
-        backend: {
-          name: 'git-gateway',
-          branch: 'main'
-        },
-        media_folder: 'images',
-        public_folder: '/images',
-        collections: [
-          {
-            name: 'listings',
-            label: 'Listings',
-            folder: '_listings',
-            create: true,
-            fields: [
-              { label: 'Title', name: 'title', widget: 'string' },
-              { label: 'Location', name: 'location', widget: 'string' },
-              { label: 'Price per night (IDR)', name: 'price', widget: 'number' },
-              { label: 'Bedrooms', name: 'bedrooms', widget: 'number' },
-              { label: 'Guests', name: 'guests', widget: 'number' },
-              { label: 'Rating', name: 'rating', widget: 'number' },
-              { label: 'Photo', name: 'photo', widget: 'image' },
-              { label: 'Description', name: 'description', widget: 'text' },
-              { label: 'Available', name: 'available', widget: 'boolean' }
-            ]
-          }
-        ]
-      }
-    });
-  </script>
+  <div class="login-card">
+    <div class="login-logo">Stay<span>Local</span></div>
+    <div class="login-sub">Admin Dashboard</div>
+    <button class="btn btn-primary" style="width:100%;justify-content:center;padding:13px" onclick="netlifyIdentity.open('login')">
+      🔐 Login with Netlify Identity
+    </button>
+    <p style="font-size:12px;color:var(--ink-lt);margin-top:18px">Authorized hosts only. Contact support if you need access.</p>
+  </div>
+
+<script>
+  netlifyIdentity.on('init', user => {
+    if (user) window.location.href = 'dashboard.html';
+  });
+  netlifyIdentity.on('login', user => {
+    netlifyIdentity.close();
+    window.location.href = 'dashboard.html';
+  });
+  netlifyIdentity.init();
+</script>
 </body>
 </html>

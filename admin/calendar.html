@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Availability — StayLocal Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@400;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="admin-style.css">
+<script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
+</head>
+<body>
+<div class="admin-shell">
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo">Stay<span>Local</span></div>
+    <nav class="sidebar-nav">
+      <a href="dashboard.html" class="sidebar-link"><span class="sidebar-icon">📊</span> Dashboard</a>
+      <a href="listings.html" class="sidebar-link"><span class="sidebar-icon">🏠</span> Listings</a>
+      <a href="listing-form.html" class="sidebar-link"><span class="sidebar-icon">➕</span> Add Listing</a>
+      <a href="calendar.html" class="sidebar-link active"><span class="sidebar-icon">📅</span> Availability</a>
+      <a href="promotions.html" class="sidebar-link"><span class="sidebar-icon">🏷️</span> Promotions</a>
+      <a href="photos.html" class="sidebar-link"><span class="sidebar-icon">🖼️</span> Photos</a>
+      <a href="settings.html" class="sidebar-link"><span class="sidebar-icon">⚙️</span> Settings</a>
+      <a href="https://staylocalzahra.netlify.app" target="_blank" class="sidebar-link"><span class="sidebar-icon">🔗</span> View Live Site</a>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="sidebar-user" id="sidebarUser"></div>
+      <button class="sidebar-logout" onclick="doLogout()">Log out</button>
+    </div>
+  </aside>
+
+  <div class="main">
+    <div class="topbar">
+      <div style="display:flex;align-items:center;gap:12px">
+        <button class="menu-toggle" onclick="document.getElementById('sidebar').classList.toggle('open')">☰</button>
+        <div class="topbar-title">Availability</div>
+      </div>
+      <button class="btn btn-coral" onclick="saveAvailability()">💾 Save Changes</button>
+    </div>
+
+    <div class="content" style="max-width:760px">
+      <div class="card" style="margin-bottom:20px">
+        <label class="field-label">Select listing</label>
+        <select id="listingSelect" class="field-select"></select>
+      </div>
+
+      <div class="card">
+        <div class="cal-header">
+          <div class="cal-nav">
+            <button onclick="changeMonth(-1)">←</button>
+            <div class="cal-month-label" id="monthLabel"></div>
+            <button onclick="changeMonth(1)">→</button>
+          </div>
+          <div style="display:flex;gap:8px">
+            <button class="btn btn-outline btn-sm" onclick="applyAction('available')">Mark Available</button>
+            <button class="btn btn-danger btn-sm" onclick="applyAction('blocked')">Block Selected</button>
+          </div>
+        </div>
+        <div class="cal-grid" id="calDow"></div>
+        <div class="cal-grid" id="calGrid" style="margin-top:6px"></div>
+        <div class="cal-legend">
+          <div class="cal-legend-item"><div class="cal-legend-dot" style="background:rgba(34,197,94,0.4)"></div>Available</div>
+          <div class="cal-legend-item"><div class="cal-legend-dot" style="background:rgba(239,68,68,0.4)"></div>Blocked by host</div>
+          <div class="cal-legend-item"><div class="cal-legend-dot" style="background:rgba(13,92,99,0.4)"></div>Booked</div>
+          <div class="cal-legend-item"><div class="cal-legend-dot" style="background:rgba(232,71,42,0.4)"></div>Promotion active</div>
+        </div>
+        <p style="font-size:12px;color:var(--ink-lt);margin-top:14px">Click dates to select (click + drag for a range), then choose an action above. Booked dates can't be edited here.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="admin.js"></script>
+<script>
+requireAuth();
+
+let allListings = [];
+let current = null;
+let viewYear, viewMonth;
+let selectedDates = new Set();
+let isDragging = false;
+
+const today = new Date();
+viewYear = today.getFullYear();
+viewMonth = today.getMonth();
+
+async function init(){
+  showLoading();
+  try {
+    allListings = await getListings();
+    const sel = document.getElementById('listingSelect');
+    sel.innerHTML = allListings.map(l => `<option value="${l._filename}">${l.title}</option>`).join('');
+    sel.addEventListener('change', () => { loadListing(sel.value); renderCalendar(); });
+    if (allListings.length) loadListing(allListings[0]._filename);
+    renderDow();
+    renderCalendar();
+  } catch(e){
+    toast('Failed to load: ' + e.message, 'error');
+  }
+  hideLoading();
+}
+
+function loadListing(filename){
+  current = allListings.find(l => l._filename === filename);
+  current.blockedDates = current.blockedDates || [];
+  current.bookedDates = current.bookedDates || [];
+  current.promotions = current.promotions || [];
+  selectedDates = new Set();
+}
+
+function renderDow(){
+  const dow = document.getElementById('calDow');
+  ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].forEach(d => {
+    const el = document.createElement('div'); el.className='cal-dow'; el.textContent=d; dow.appendChild(el);
+  });
+}
+
+function dateKey(y,m,d){ return `${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`; }
+
+function isPromoActive(dateStr){
+  if (!current || !current.promotions) return false;
+  return current.promotions.some(p => dateStr >= p.start && dateStr <= p.end);
+}
+
+function renderCalendar(){
+  document.getElementById('monthLabel').textContent = new Date(viewYear, viewMonth).toLocaleDateString('en-US',{month:'long',year:'numeric'});
+  const grid = document.getElementById('calGrid');
+  grid.innerHTML = '';
+  const firstDay = new Date(viewYear, viewMonth, 1).getDay();
+  const daysInMonth = new Date(viewYear, viewMonth+1, 0).getDate();
+  const todayStr = today.toISOString().slice(0,10);
+
+  for (let i=0;i<firstDay;i++){
+    const el = document.createElement('div'); el.className='cal-day empty'; grid.appendChild(el);
+  }
+  for (let d=1; d<=daysInMonth; d++){
+    const key = dateKey(viewYear, viewMonth, d);
+    const el = document.createElement('div');
+    el.className = 'cal-day';
+    el.textContent = d;
+    el.dataset.date = key;
+
+    if (key < todayStr){
+      el.classList.add('past');
+    } else if (current && current.bookedDates.includes(key)){
+      el.classList.add('booked');
+    } else if (current && current.blockedDates.includes(key)){
+      el.classList.add('blocked');
+    } else if (isPromoActive(key)){
+      el.classList.add('promo');
+    } else {
+      el.classList.add('available');
+    }
+    if (selectedDates.has(key)) el.classList.add('selected');
+
+    if (key >= todayStr && !(current && current.bookedDates.includes(key))){
+      el.addEventListener('mousedown', () => { isDragging = true; toggleSelect(key, el); });
+      el.addEventListener('mouseenter', () => { if (isDragging) toggleSelect(key, el, true); });
+    }
+    grid.appendChild(el);
+  }
+}
+document.addEventListener('mouseup', () => isDragging = false);
+
+function toggleSelect(key, el, forceAdd=false){
+  if (forceAdd){ selectedDates.add(key); el.classList.add('selected'); return; }
+  if (selectedDates.has(key)){ selectedDates.delete(key); el.classList.remove('selected'); }
+  else { selectedDates.add(key); el.classList.add('selected'); }
+}
+
+function changeMonth(delta){
+  viewMonth += delta;
+  if (viewMonth < 0){ viewMonth=11; viewYear--; }
+  if (viewMonth > 11){ viewMonth=0; viewYear++; }
+  renderCalendar();
+}
+
+function applyAction(action){
+  if (!current) return;
+  if (!selectedDates.size) return toast('Select dates first', 'warn');
+  selectedDates.forEach(key => {
+    current.blockedDates = current.blockedDates.filter(d => d !== key);
+    if (action === 'blocked') current.blockedDates.push(key);
+  });
+  selectedDates.clear();
+  renderCalendar();
+  toast(`${action === 'blocked' ? 'Blocked' : 'Marked available'} — remember to Save Changes`, 'success');
+}
+
+async function saveAvailability(){
+  if (!current) return;
+  showLoading();
+  try {
+    await saveListing(current);
+    toast('Availability saved', 'success');
+  } catch(e){
+    toast('Failed to save: ' + e.message, 'error');
+  }
+  hideLoading();
+}
+
+init();
+</script>
+</body>
+</html>

@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Photos — StayLocal Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@400;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="admin-style.css">
+<script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
+</head>
+<body>
+<div class="admin-shell">
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo">Stay<span>Local</span></div>
+    <nav class="sidebar-nav">
+      <a href="dashboard.html" class="sidebar-link"><span class="sidebar-icon">📊</span> Dashboard</a>
+      <a href="listings.html" class="sidebar-link"><span class="sidebar-icon">🏠</span> Listings</a>
+      <a href="listing-form.html" class="sidebar-link"><span class="sidebar-icon">➕</span> Add Listing</a>
+      <a href="calendar.html" class="sidebar-link"><span class="sidebar-icon">📅</span> Availability</a>
+      <a href="promotions.html" class="sidebar-link"><span class="sidebar-icon">🏷️</span> Promotions</a>
+      <a href="photos.html" class="sidebar-link active"><span class="sidebar-icon">🖼️</span> Photos</a>
+      <a href="settings.html" class="sidebar-link"><span class="sidebar-icon">⚙️</span> Settings</a>
+      <a href="https://staylocalzahra.netlify.app" target="_blank" class="sidebar-link"><span class="sidebar-icon">🔗</span> View Live Site</a>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="sidebar-user" id="sidebarUser"></div>
+      <button class="sidebar-logout" onclick="doLogout()">Log out</button>
+    </div>
+  </aside>
+
+  <div class="main">
+    <div class="topbar">
+      <div style="display:flex;align-items:center;gap:12px">
+        <button class="menu-toggle" onclick="document.getElementById('sidebar').classList.toggle('open')">☰</button>
+        <div class="topbar-title">Photo Library</div>
+      </div>
+    </div>
+
+    <div class="content">
+      <p style="font-size:13px;color:var(--ink-lt);margin-bottom:20px">All images uploaded across every listing. Photos are managed per-listing in the listing form — this is a read-only overview with quick links.</p>
+      <div class="photo-grid" id="libraryGrid"></div>
+    </div>
+  </div>
+</div>
+
+<script src="admin.js"></script>
+<script>
+requireAuth();
+
+async function loadLibrary(){
+  showLoading();
+  try {
+    const listings = await getListings();
+    const grid = document.getElementById('libraryGrid');
+    const all = [];
+    listings.forEach(l => (l.photos||[]).forEach(p => all.push({ ...p, listingTitle: l.title, filename: l._filename })));
+    if (!all.length){
+      grid.innerHTML = '<div class="empty-state" style="grid-column:1/-1"><div class="empty-state-icon">🖼️</div>No photos uploaded yet.</div>';
+    } else {
+      grid.innerHTML = all.map(p => `
+        <div class="photo-thumb">
+          <img src="${photoUrl(p.url)}" onerror="this.src='https://images.unsplash.com/photo-1582268611958-ebfd161ef9cf?w=300&q=60'">
+          <span class="photo-thumb-cat">${p.category}</span>
+          <a href="listing-form.html?file=${encodeURIComponent(p.filename)}" style="position:absolute;bottom:6px;right:6px;background:rgba(13,92,99,0.85);color:#fff;font-size:10px;padding:3px 8px;border-radius:100px">${p.listingTitle}</a>
+        </div>
+      `).join('');
+    }
+  } catch(e){
+    toast('Failed to load photos: ' + e.message, 'error');
+  }
+  hideLoading();
+}
+loadLibrary();
+</script>
+</body>
+</html>

@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard — StayLocal Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@400;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="admin-style.css">
+<script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+<div class="admin-shell">
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo">Stay<span>Local</span></div>
+    <nav class="sidebar-nav">
+      <a href="dashboard.html" class="sidebar-link active"><span class="sidebar-icon">📊</span> Dashboard</a>
+      <a href="listings.html" class="sidebar-link"><span class="sidebar-icon">🏠</span> Listings</a>
+      <a href="listing-form.html" class="sidebar-link"><span class="sidebar-icon">➕</span> Add Listing</a>
+      <a href="calendar.html" class="sidebar-link"><span class="sidebar-icon">📅</span> Availability</a>
+      <a href="promotions.html" class="sidebar-link"><span class="sidebar-icon">🏷️</span> Promotions</a>
+      <a href="photos.html" class="sidebar-link"><span class="sidebar-icon">🖼️</span> Photos</a>
+      <a href="settings.html" class="sidebar-link"><span class="sidebar-icon">⚙️</span> Settings</a>
+      <a href="https://staylocalzahra.netlify.app" target="_blank" class="sidebar-link"><span class="sidebar-icon">🔗</span> View Live Site</a>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="sidebar-user" id="sidebarUser"></div>
+      <button class="sidebar-logout" onclick="doLogout()">Log out</button>
+    </div>
+  </aside>
+
+  <div class="main">
+    <div class="topbar">
+      <div style="display:flex;align-items:center;gap:12px">
+        <button class="menu-toggle" onclick="document.getElementById('sidebar').classList.toggle('open')">☰</button>
+        <div class="topbar-title">Dashboard</div>
+      </div>
+      <a href="listing-form.html" class="btn btn-coral">+ Add Listing</a>
+    </div>
+
+    <div class="content">
+      <div class="stat-grid">
+        <div class="stat-card">
+          <div class="stat-label">Total Listings</div>
+          <div class="stat-value" id="statListings">—</div>
+          <div class="stat-sub" id="statListingsSub">&nbsp;</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Live / Listed</div>
+          <div class="stat-value" id="statLive">—</div>
+          <div class="stat-sub">Currently bookable</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Avg. Rating</div>
+          <div class="stat-value" id="statRating">—</div>
+          <div class="stat-sub">Across all listings</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Est. Monthly Revenue</div>
+          <div class="stat-value" id="statRevenue">—</div>
+          <div class="stat-sub">At 65% occupancy</div>
+        </div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1.3fr 1fr;gap:20px;margin-bottom:28px">
+        <div class="card">
+          <h3 style="font-family:'Fraunces',serif;font-size:16px;margin-bottom:16px">Listings by Location</h3>
+          <canvas id="locationChart" height="180"></canvas>
+        </div>
+        <div class="card">
+          <h3 style="font-family:'Fraunces',serif;font-size:16px;margin-bottom:16px">Active Promotions</h3>
+          <div id="promoSummary" style="font-size:13px;color:var(--ink-lt)">Loading…</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+          <h3 style="font-family:'Fraunces',serif;font-size:16px">Recent Listings</h3>
+          <a href="listings.html" class="btn btn-outline btn-sm">View all →</a>
+        </div>
+        <table class="table">
+          <thead><tr><th></th><th>Title</th><th>Location</th><th>Price</th><th>Status</th></tr></thead>
+          <tbody id="recentTable"><tr><td colspan="5" style="text-align:center;color:var(--ink-lt);padding:30px">Loading…</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="admin.js"></script>
+<script>
+requireAuth();
+
+async function loadDashboard(){
+  showLoading();
+  try {
+    const listings = await getListings();
+    const live = listings.filter(l => l.available !== false);
+    document.getElementById('statListings').textContent = listings.length;
+    document.getElementById('statListingsSub').textContent = `${live.length} listed, ${listings.length - live.length} hidden`;
+    document.getElementById('statLive').textContent = live.length;
+
+    const avgRating = listings.length ? (listings.reduce((s,l)=>s+(Number(l.rating)||0),0)/listings.length).toFixed(2) : '—';
+    document.getElementById('statRating').textContent = avgRating;
+
+    const monthlyRevenue = live.reduce((s,l)=> s + (Number(l.price)||0) * 30 * 0.65, 0);
+    document.getElementById('statRevenue').textContent = formatIDR(monthlyRevenue);
+
+    // Location chart
+    const locCounts = {};
+    listings.forEach(l => { const loc = l.location || 'Unknown'; locCounts[loc] = (locCounts[loc]||0)+1; });
+    new Chart(document.getElementById('locationChart'), {
+      type: 'bar',
+      data: {
+        labels: Object.keys(locCounts),
+        datasets: [{ data: Object.values(locCounts), backgroundColor: '#0D5C63', borderRadius: 6 }]
+      },
+      options: { plugins:{legend:{display:false}}, scales:{y:{beginAtZero:true,ticks:{precision:0}}} }
+    });
+
+    // Promotions summary
+    const today = new Date().toISOString().slice(0,10);
+    const activePromos = [];
+    listings.forEach(l => {
+      (l.promotions||[]).forEach(p => {
+        if (p.start <= today && p.end >= today) activePromos.push({ title: l.title, ...p });
+      });
+    });
+    const promoEl = document.getElementById('promoSummary');
+    if (!activePromos.length){
+      promoEl.innerHTML = '<div class="empty-state" style="padding:20px"><div class="empty-state-icon">🏷️</div>No active promotions right now.<br><a href="promotions.html" style="color:var(--teal);font-weight:600">Create one →</a></div>';
+    } else {
+      promoEl.innerHTML = activePromos.map(p => `
+        <div style="padding:10px 0;border-bottom:1px solid var(--border)">
+          <strong>${p.title}</strong><br>
+          <span class="badge badge-teal">${p.discountPercent}% off</span>
+          <span class="badge badge-amber">${p.cashbackPercent}% cashback</span>
+        </div>`).join('');
+    }
+
+    // Recent table
+    const recent = [...listings].slice(-5).reverse();
+    const tbody = document.getElementById('recentTable');
+    if (!recent.length){
+      tbody.innerHTML = '<tr><td colspan="5"><div class="empty-state"><div class="empty-state-icon">🏠</div>No listings yet.<br><a href="listing-form.html" style="color:var(--teal);font-weight:600">Add your first listing →</a></div></td></tr>';
+    } else {
+      tbody.innerHTML = recent.map(l => `
+        <tr>
+          <td><img class="table-photo" src="${photoUrl((l.photos&&l.photos[0])?l.photos[0].url:null)}" onerror="this.src='https://images.unsplash.com/photo-1582268611958-ebfd161ef9cf?w=200&q=60'"></td>
+          <td>${l.title}</td>
+          <td>${l.location||''}</td>
+          <td>${formatIDR(l.price)}</td>
+          <td>${l.available!==false ? '<span class="badge badge-green">Listed</span>' : '<span class="badge badge-red">Hidden</span>'}</td>
+        </tr>`).join('');
+    }
+  } catch(e){
+    toast('Failed to load dashboard: ' + e.message, 'error');
+  }
+  hideLoading();
+}
+loadDashboard();
+</script>
+</body>
+</html>

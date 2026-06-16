@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Listing — StayLocal</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,600;0,9..144,700;1,9..144,300;1,9..144,400&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+  :root{
+    --teal:#0D5C63;--teal-lt:#1A8A94;--sand:#F5E6C8;--coral:#E8472A;--coral-dk:#C33820;
+    --cream:#FAFAF5;--ink:#12110F;--ink-mid:#4A4844;--ink-lt:#8A8784;--white:#FFFFFF;
+    --border:rgba(18,17,15,0.10);--shadow-card:0 2px 16px rgba(18,17,15,0.10);
+    --shadow-hover:0 8px 32px rgba(18,17,15,0.16);--r-sm:8px;--r-md:14px;--r-lg:22px;--r-pill:100px;
+  }
+  body{font-family:'Inter',sans-serif;background:var(--cream);color:var(--ink);line-height:1.5;-webkit-font-smoothing:antialiased}
+  a{color:inherit}
+
+  nav{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:0 40px;height:68px;background:rgba(250,250,245,0.95);backdrop-filter:blur(12px);border-bottom:1px solid var(--border)}
+  .nav-logo{font-family:'Fraunces',serif;font-size:22px;font-weight:700;color:var(--teal);text-decoration:none}
+  .nav-logo span{color:var(--coral)}
+  .back-link{display:flex;align-items:center;gap:6px;font-size:14px;font-weight:500;text-decoration:none;color:var(--ink-mid)}
+
+  .wrap{max-width:1040px;margin:0 auto;padding:104px 40px 80px}
+
+  .gallery{display:grid;grid-template-columns:2fr 1fr 1fr;grid-template-rows:1fr 1fr;gap:8px;height:420px;border-radius:var(--r-lg);overflow:hidden;margin-bottom:32px}
+  .gallery img{width:100%;height:100%;object-fit:cover;display:block;cursor:pointer}
+  .gallery > div:first-child{grid-row:1/3}
+
+  .cat-filter{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap}
+  .cat-btn{padding:7px 16px;border-radius:var(--r-pill);border:1.5px solid var(--border);font-size:13px;font-weight:500;cursor:pointer;background:var(--white);text-transform:capitalize}
+  .cat-btn.active{border-color:var(--teal);background:var(--teal);color:var(--white)}
+
+  .listing-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:24px;gap:20px}
+  .listing-title{font-family:'Fraunces',serif;font-size:32px;font-weight:400;letter-spacing:-0.5px;margin-bottom:6px}
+  .listing-meta{font-size:14px;color:var(--ink-lt)}
+  .listing-rating{font-size:15px;font-weight:600;white-space:nowrap}
+  .star{color:var(--coral)}
+
+  .layout{display:grid;grid-template-columns:1.6fr 1fr;gap:48px;align-items:start}
+  .section{padding:28px 0;border-bottom:1px solid var(--border)}
+  .section h3{font-family:'Fraunces',serif;font-size:20px;font-weight:500;margin-bottom:16px}
+  .desc-text{font-size:15px;color:var(--ink-mid);line-height:1.7}
+
+  .amenity-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  .amenity-item{display:flex;align-items:center;gap:10px;font-size:14px}
+  .amenity-icon{width:28px;height:28px;background:rgba(13,92,99,0.08);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px}
+
+  .map-box{position:relative;height:220px;border-radius:var(--r-md);overflow:hidden;background:#e8e4d8}
+  .map-box img{width:100%;height:100%;object-fit:cover;opacity:0.85}
+  .map-radius-label{position:absolute;bottom:12px;left:12px;background:rgba(255,255,255,0.95);padding:8px 14px;border-radius:var(--r-sm);font-size:12px;font-weight:600;box-shadow:var(--shadow-card)}
+  .map-note{font-size:12px;color:var(--ink-lt);margin-top:10px}
+
+  /* Calendar */
+  .cal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+  .cal-nav{display:flex;gap:8px;align-items:center}
+  .cal-nav button{width:30px;height:30px;border-radius:50%;border:1px solid var(--border);background:var(--white);cursor:pointer}
+  .cal-month-label{font-weight:600;font-size:14px;min-width:130px;text-align:center}
+  .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:5px}
+  .cal-dow{text-align:center;font-size:10px;color:var(--ink-lt);text-transform:uppercase;padding-bottom:4px}
+  .cal-day{aspect-ratio:1;display:flex;align-items:center;justify-content:center;border-radius:6px;font-size:12px;background:#f5f5f0;position:relative}
+  .cal-day.empty{visibility:hidden}
+  .cal-day.past{color:var(--ink-lt);background:transparent}
+  .cal-day.available{background:rgba(34,197,94,0.12);color:#15803d}
+  .cal-day.unavailable{background:rgba(239,68,68,0.1);color:#b91c1c;text-decoration:line-through}
+  .cal-day.promo{background:rgba(232,71,42,0.16);color:var(--coral-dk);font-weight:600}
+  .cal-legend{display:flex;gap:14px;margin-top:12px;flex-wrap:wrap}
+  .cal-legend-item{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--ink-mid)}
+  .cal-dot{width:9px;height:9px;border-radius:3px}
+
+  /* Booking widget */
+  .booking-card{background:var(--white);border-radius:var(--r-lg);box-shadow:var(--shadow-hover);padding:24px;position:sticky;top:90px}
+  .price-row{display:flex;align-items:baseline;gap:10px;margin-bottom:4px}
+  .price-strike{font-size:16px;color:var(--ink-lt);text-decoration:line-through}
+  .price-now{font-size:24px;font-weight:600;color:var(--ink)}
+  .price-unit{font-size:13px;color:var(--ink-lt)}
+  .promo-badge{display:inline-flex;align-items:center;gap:5px;background:rgba(232,71,42,0.1);color:var(--coral-dk);font-size:12px;font-weight:600;padding:4px 10px;border-radius:var(--r-pill);margin-bottom:16px}
+
+  .date-inputs{display:grid;grid-template-columns:1fr 1fr;gap:0;border:1.5px solid var(--border);border-radius:var(--r-sm);overflow:hidden;margin-bottom:14px}
+  .date-input{padding:10px 14px;border-right:1px solid var(--border)}
+  .date-input:last-child{border-right:none}
+  .date-input label{font-size:10px;text-transform:uppercase;color:var(--ink-lt);font-weight:600;display:block;margin-bottom:2px}
+  .date-input input{border:none;font-size:13px;font-family:inherit;width:100%;outline:none}
+
+  .guest-select{display:flex;align-items:center;justify-content:space-between;border:1.5px solid var(--border);border-radius:var(--r-sm);padding:10px 14px;margin-bottom:18px}
+  .stepper{display:flex;align-items:center;gap:14px}
+  .stepper button{width:26px;height:26px;border-radius:50%;border:1px solid var(--border);background:var(--white);cursor:pointer}
+
+  .summary-line{display:flex;justify-content:space-between;font-size:14px;margin-bottom:8px;color:var(--ink-mid)}
+  .summary-total{display:flex;justify-content:space-between;font-size:16px;font-weight:600;padding-top:12px;border-top:1px solid var(--border);margin-top:8px}
+  .cashback-note{display:flex;align-items:center;gap:8px;background:rgba(13,92,99,0.06);border-radius:var(--r-sm);padding:10px 14px;margin-top:14px;font-size:13px;color:var(--teal)}
+
+  .btn-book{width:100%;padding:14px;background:var(--coral);color:var(--white);border:none;border-radius:var(--r-pill);font-size:15px;font-weight:600;cursor:pointer;margin-top:16px}
+  .btn-book:hover{background:var(--coral-dk)}
+
+  @media (max-width:900px){
+    .layout{grid-template-columns:1fr}
+    .gallery{height:auto;grid-template-rows:repeat(3,140px);grid-template-columns:1fr 1fr}
+    .gallery>div:first-child{grid-row:1;grid-column:1/3;height:200px}
+    .wrap{padding:88px 18px 60px}
+    .amenity-grid{grid-template-columns:1fr}
+    .booking-card{position:static}
+  }
+</style>
+</head>
+<body>
+<nav>
+  <a href="index.html" class="nav-logo">Stay<span>Local</span></a>
+  <a href="index.html" class="back-link">← Back to search</a>
+</nav>
+
+<div class="wrap" id="content">
+  <div style="text-align:center;padding:80px;color:var(--ink-lt)">Loading listing…</div>
+</div>
+
+<script>
+const NETLIFY_SITE = 'https://staylocalzahra.netlify.app';
+const GITHUB_REPO = 'Ryuga1981/Staylocal';
+
+function parseFrontmatter(text){
+  const match = text.match(/^---\n([\s\S]*?)\n---\n?([\s\S]*)$/);
+  if (!match) return { _body: text };
+  const yamlBlock = match[1];
+  const body = match[2] || '';
+  const obj = { _body: body.trim() };
+  const lines = yamlBlock.split('\n');
+  let i = 0;
+  while (i < lines.length){
+    const line = lines[i];
+    const kv = line.match(/^([a-zA-Z0-9_]+):\s*(.*)$/);
+    if (!kv){ i++; continue; }
+    const key = kv[1];
+    let val = kv[2].trim();
+    if (val === ''){
+      const blockLines = [];
+      let j = i+1;
+      while (j < lines.length && /^\s+/.test(lines[j])){ blockLines.push(lines[j]); j++; }
+      obj[key] = parseYamlBlock(blockLines);
+      i = j; continue;
+    }
+    if (val.startsWith('[') && val.endsWith(']')){
+      obj[key] = val.slice(1,-1).split(',').map(s=>s.trim().replace(/^["']|["']$/g,'')).filter(Boolean);
+    } else if (val === 'true') obj[key] = true;
+    else if (val === 'false') obj[key] = false;
+    else if (!isNaN(val) && val !== '') obj[key] = Number(val);
+    else obj[key] = val.replace(/^["']|["']$/g,'');
+    i++;
+  }
+  return obj;
+}
+function parseYamlBlock(lines){
+  const items = []; let current = null;
+  lines.forEach(raw => {
+    const line = raw.replace(/^\s+/, '');
+    if (line.startsWith('- ')){
+      if (current) items.push(current);
+      current = {};
+      const rest = line.slice(2);
+      const kv = rest.match(/^([a-zA-Z0-9_]+):\s*(.*)$/);
+      if (kv) current[kv[1]] = coerce(kv[2]);
+      else if (rest.trim()){ items.push(coerce(rest.trim())); current = null; }
+    } else if (current){
+      const kv = line.match(/^([a-zA-Z0-9_]+):\s*(.*)$/);
+      if (kv) current[kv[1]] = coerce(kv[2]);
+    }
+  });
+  if (current) items.push(current);
+  return items;
+}
+function coerce(val){
+  val = val.trim();
+  if (val === 'true') return true;
+  if (val === 'false') return false;
+  if (!isNaN(val) && val !== '') return Number(val);
+  return val.replace(/^["']|["']$/g,'');
+}
+function photoUrl(path){
+  if (!path) return 'https://images.unsplash.com/photo-1582268611958-ebfd161ef9cf?w=800&q=80';
+  if (path.startsWith('/images/')) return NETLIFY_SITE + path;
+  return path;
+}
+function formatIDR(n){ return 'Rp ' + Math.round(n||0).toLocaleString('id-ID'); }
+
+const AMENITY_ICONS = {
+  'Pool':'🏊','WiFi':'📶','Kitchen':'🍳','Air Conditioning':'❄️','Free Parking':'🚗',
+  'Gym':'🏋️','BBQ Area':'🍖','Washer':'🧺','TV':'📺','Workspace':'💻',
+  'Hot Tub':'🛁','Sea View':'🌊','Garden':'🌿','Pet Friendly':'🐾','Breakfast Included':'🥐'
+};
+
+let listing = null;
+let photoCategory = 'all';
+let calYear, calMonth;
+let stayDates = { checkin:null, checkout:null };
+let guestCount = 2;
+
+async function loadListing(){
+  const params = new URLSearchParams(window.location.search);
+  const file = params.get('file');
+  const content = document.getElementById('content');
+  try {
+    const res = await fetch(`https://api.github.com/repos/${GITHUB_REPO}/contents/_listings/${file}`);
+    const meta = await res.json();
+    const r = await fetch(meta.download_url);
+    const text = await r.text();
+    listing = parseFrontmatter(text);
+    listing.photos = listing.photos || [];
+    listing.amenities = listing.amenities || [];
+    listing.promotions = listing.promotions || [];
+    listing.blockedDates = listing.blockedDates || [];
+    listing.bookedDates = listing.bookedDates || [];
+    render();
+  } catch(e){
+    content.innerHTML = `<div style="text-align:center;padding:80px;color:var(--ink-lt)">Listing not found. <a href="index.html" style="color:var(--teal)">Go back</a></div>`;
+  }
+}
+
+function getActivePromo(dateStr){
+  return listing.promotions.find(p => dateStr >= p.start && dateStr <= p.end);
+}
+function todayStr(){ return new Date().toISOString().slice(0,10); }
+
+function currentPricing(){
+  const today = todayStr();
+  const promo = getActivePromo(today);
+  const base = Number(listing.price)||0;
+  if (promo && promo.discountPercent){
+    const discounted = base * (1 - promo.discountPercent/100);
+    return { base, discounted, promo };
+  }
+  return { base, discounted: base, promo: null };
+}
+
+function render(){
+  const pricing = currentPricing();
+  const photos = listing.photos.length ? listing.photos : [{url:null,category:'outdoor'}];
+  const cats = ['all', ...new Set(listing.photos.map(p=>p.category))];
+
+  document.getElementById('content').innerHTML = `
+    <div class="gallery" id="galleryGrid"></div>
+
+    ${cats.length>1 ? `<div class="cat-filter" id="catFilter"></div>` : ''}
+
+    <div class="listing-header">
+      <div>
+        <div class="listing-title">${listing.title}</div>
+        <div class="listing-meta">${listing.region || listing.location || ''} · ${listing.bedrooms||'?'} bedrooms · ${listing.bathrooms||'?'} baths · up to ${listing.guests||'?'} guests</div>
+      </div>
+      <div class="listing-rating"><span class="star">★</span> ${listing.rating || 'New'}</div>
+    </div>
+
+    <div class="layout">
+      <div>
+        <div class="section">
+          <h3>About this place</h3>
+          <p class="desc-text">${listing.description || listing._body || 'No description provided yet.'}</p>
+        </div>
+
+        <div class="section">
+          <h3>Amenities</h3>
+          <div class="amenity-grid">
+            ${listing.amenities.length ? listing.amenities.map(a => `
+              <div class="amenity-item"><div class="amenity-icon">${AMENITY_ICONS[a]||'✓'}</div>${a}</div>
+            `).join('') : '<span style="color:var(--ink-lt);font-size:14px">No amenities listed</span>'}
+          </div>
+        </div>
+
+        <div class="section">
+          <h3>Location</h3>
+          <div class="map-box">
+            <img src="https://images.unsplash.com/photo-1524661135-423995f22d0b?w=900&q=70" alt="Map area">
+            <div class="map-radius-label">📍 ${listing.region || listing.location || 'Southeast Asia'}</div>
+          </div>
+          <p class="map-note">Exact address shared only after booking is confirmed. Shown area reflects a ~1km radius around the property for guest privacy.</p>
+        </div>
+
+        <div class="section" style="border-bottom:none">
+          <h3>Availability</h3>
+          <div class="cal-header">
+            <div class="cal-nav">
+              <button onclick="changeMonth(-1)">←</button>
+              <div class="cal-month-label" id="monthLabel"></div>
+              <button onclick="changeMonth(1)">→</button>
+            </div>
+          </div>
+          <div class="cal-grid" id="calDow"></div>
+          <div class="cal-grid" id="calGrid" style="margin-top:5px"></div>
+          <div class="cal-legend">
+            <div class="cal-legend-item"><div class="cal-dot" style="background:rgba(34,197,94,0.4)"></div>Available</div>
+            <div class="cal-legend-item"><div class="cal-dot" style="background:rgba(239,68,68,0.3)"></div>Unavailable</div>
+            <div class="cal-legend-item"><div class="cal-dot" style="background:rgba(232,71,42,0.4)"></div>Promotion</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="booking-card">
+        ${pricing.promo ? `<div class="promo-badge">🏷️ ${pricing.promo.discountPercent}% off · limited dates</div>` : ''}
+        <div class="price-row">
+          ${pricing.promo ? `<span class="price-strike">${formatIDR(pricing.base)}</span>` : ''}
+          <span class="price-now">${formatIDR(pricing.discounted)}</span>
+        </div>
+        <div class="price-unit" style="margin-bottom:18px">per night</div>
+
+        <div class="date-inputs">
+          <div class="date-input"><label>Check-in</label><input type="date" id="checkinInput"></div>
+          <div class="date-input"><label>Check-out</label><input type="date" id="checkoutInput"></div>
+        </div>
+
+        <div class="guest-select">
+          <span style="font-size:13px;font-weight:500">Guests</span>
+          <div class="stepper">
+            <button onclick="changeGuests(-1)">−</button>
+            <span id="guestCountLabel">${guestCount}</span>
+            <button onclick="changeGuests(1)">+</button>
+          </div>
+        </div>
+
+        <div id="summaryBox"></div>
+
+        <button class="btn-book" onclick="bookNow()">Reserve</button>
+      </div>
+    </div>
+  `;
+
+  renderGallery(photos);
+  if (cats.length > 1) renderCatFilter(cats);
+  renderDow();
+  const today = new Date();
+  calYear = today.getFullYear(); calMonth = today.getMonth();
+  renderCalendar();
+  updateSummary();
+
+  document.getElementById('checkinInput').addEventListener('change', updateSummary);
+  document.getElementById('checkoutInput').addEventListener('change', updateSummary);
+}
+
+function renderGallery(photos){
+  const grid = document.getElementById('galleryGrid');
+  const shown = photos.slice(0,5);
+  while (shown.length < 3) shown.push(shown[0]);
+  grid.innerHTML = shown.map(p => `<div><img src="${photoUrl(p.url)}" onerror="this.src='https://images.unsplash.com/photo-1582268611958-ebfd161ef9cf?w=800&q=80'"></div>`).join('');
+}
+
+function renderCatFilter(cats){
+  const el = document.getElementById('catFilter');
+  el.innerHTML = cats.map(c => `<button class="cat-btn ${c===photoCategory?'active':''}" data-cat="${c}">${c}</button>`).join('');
+  el.querySelectorAll('.cat-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      photoCategory = btn.dataset.cat;
+      const filtered = photoCategory === 'all' ? listing.photos : listing.photos.filter(p=>p.category===photoCategory);
+      renderGallery(filtered.length ? filtered : listing.photos);
+      renderCatFilter(cats);
+    });
+  });
+}
+
+function renderDow(){
+  const dow = document.getElementById('calDow');
+  dow.innerHTML = ['S','M','T','W','T','F','S'].map(d=>`<div class="cal-dow">${d}</div>`).join('');
+}
+
+function dateKey(y,m,d){ return `${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`; }
+
+function renderCalendar(){
+  document.getElementById('monthLabel').textContent = new Date(calYear,calMonth).toLocaleDateString('en-US',{month:'long',year:'numeric'});
+  const grid = document.getElementById('calGrid');
+  grid.innerHTML = '';
+  const firstDay = new Date(calYear,calMonth,1).getDay();
+  const daysInMonth = new Date(calYear,calMonth+1,0).getDate();
+  const today = todayStr();
+
+  for (let i=0;i<firstDay;i++) grid.innerHTML += '<div class="cal-day empty"></div>';
+  for (let d=1; d<=daysInMonth; d++){
+    const key = dateKey(calYear,calMonth,d);
+    let cls = 'available';
+    if (key < today) cls = 'past';
+    else if (listing.bookedDates.includes(key) || listing.blockedDates.includes(key)) cls = 'unavailable';
+    else if (getActivePromo(key)) cls = 'promo';
+    grid.innerHTML += `<div class="cal-day ${cls}">${d}</div>`;
+  }
+}
+function changeMonth(delta){
+  calMonth += delta;
+  if (calMonth<0){calMonth=11;calYear--;}
+  if (calMonth>11){calMonth=0;calYear++;}
+  renderCalendar();
+}
+
+function changeGuests(delta){
+  guestCount = Math.max(1, Math.min(listing.guests||10, guestCount+delta));
+  document.getElementById('guestCountLabel').textContent = guestCount;
+}
+
+function nightsBetween(a,b){
+  const ms = new Date(b) - new Date(a);
+  return Math.max(0, Math.round(ms / 86400000));
+}
+
+function updateSummary(){
+  const checkin = document.getElementById('checkinInput').value;
+  const checkout = document.getElementById('checkoutInput').value;
+  const box = document.getElementById('summaryBox');
+  if (!checkin || !checkout || checkout <= checkin){
+    box.innerHTML = `<p style="font-size:12px;color:var(--ink-lt);margin-top:4px">Select your dates to see the total price.</p>`;
+    return;
+  }
+  const nights = nightsBetween(checkin, checkout);
+  const promo = getActivePromo(checkin);
+  const base = Number(listing.price)||0;
+  const nightly = promo && promo.discountPercent ? base * (1 - promo.discountPercent/100) : base;
+  const subtotal = nightly * nights;
+  const cashbackPct = promo ? (promo.cashbackPercent||0) : 0;
+  const cashbackAmt = subtotal * (cashbackPct/100);
+
+  box.innerHTML = `
+    <div class="summary-line"><span>${formatIDR(nightly)} × ${nights} night${nights>1?'s':''}</span><span>${formatIDR(subtotal)}</span></div>
+    <div class="summary-total"><span>Subtotal</span><span>${formatIDR(subtotal)}</span></div>
+    ${cashbackPct ? `<div class="cashback-note">💰 You'll earn <strong>${cashbackPct}% cashback</strong> (≈ ${formatIDR(cashbackAmt)}) after this stay</div>` : ''}
+  `;
+}
+
+function bookNow(){
+  const checkin = document.getElementById('checkinInput').value;
+  const checkout = document.getElementById('checkoutInput').value;
+  if (!checkin || !checkout) return alert('Please select check-in and check-out dates.');
+  alert('Booking flow coming soon! Dates: ' + checkin + ' → ' + checkout);
+}
+
+loadListing();
+</script>
+</body>
+</html>

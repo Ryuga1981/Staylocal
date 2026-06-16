@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Listings — StayLocal Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@400;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="admin-style.css">
+<script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
+</head>
+<body>
+<div class="admin-shell">
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo">Stay<span>Local</span></div>
+    <nav class="sidebar-nav">
+      <a href="dashboard.html" class="sidebar-link"><span class="sidebar-icon">📊</span> Dashboard</a>
+      <a href="listings.html" class="sidebar-link active"><span class="sidebar-icon">🏠</span> Listings</a>
+      <a href="listing-form.html" class="sidebar-link"><span class="sidebar-icon">➕</span> Add Listing</a>
+      <a href="calendar.html" class="sidebar-link"><span class="sidebar-icon">📅</span> Availability</a>
+      <a href="promotions.html" class="sidebar-link"><span class="sidebar-icon">🏷️</span> Promotions</a>
+      <a href="photos.html" class="sidebar-link"><span class="sidebar-icon">🖼️</span> Photos</a>
+      <a href="settings.html" class="sidebar-link"><span class="sidebar-icon">⚙️</span> Settings</a>
+      <a href="https://staylocalzahra.netlify.app" target="_blank" class="sidebar-link"><span class="sidebar-icon">🔗</span> View Live Site</a>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="sidebar-user" id="sidebarUser"></div>
+      <button class="sidebar-logout" onclick="doLogout()">Log out</button>
+    </div>
+  </aside>
+
+  <div class="main">
+    <div class="topbar">
+      <div style="display:flex;align-items:center;gap:12px">
+        <button class="menu-toggle" onclick="document.getElementById('sidebar').classList.toggle('open')">☰</button>
+        <div class="topbar-title">Listings</div>
+      </div>
+      <a href="listing-form.html" class="btn btn-coral">+ Add Listing</a>
+    </div>
+
+    <div class="content">
+      <div class="card" style="margin-bottom:20px">
+        <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:center">
+          <input id="searchInput" class="field-input" placeholder="Search by title or location…" style="flex:1;min-width:200px">
+          <select id="sortSelect" class="field-select" style="width:auto">
+            <option value="newest">Newest first</option>
+            <option value="price-asc">Price: low to high</option>
+            <option value="price-desc">Price: high to low</option>
+            <option value="rating">Highest rated</option>
+            <option value="location">Location A–Z</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="card">
+        <table class="table">
+          <thead>
+            <tr>
+              <th></th><th>Title</th><th>Location</th><th>Price / night</th>
+              <th>Beds</th><th>Guests</th><th>Rating</th><th>Listed</th><th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="listingsTable">
+            <tr><td colspan="9" style="text-align:center;padding:40px;color:var(--ink-lt)">Loading…</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="admin.js"></script>
+<script>
+requireAuth();
+let allListings = [];
+
+async function loadListings(){
+  showLoading();
+  try {
+    allListings = await getListings();
+    renderTable();
+  } catch(e){
+    toast('Failed to load listings: ' + e.message, 'error');
+  }
+  hideLoading();
+}
+
+function renderTable(){
+  let list = [...allListings];
+  const q = document.getElementById('searchInput').value.toLowerCase();
+  if (q) list = list.filter(l => (l.title||'').toLowerCase().includes(q) || (l.location||'').toLowerCase().includes(q));
+
+  const sort = document.getElementById('sortSelect').value;
+  if (sort === 'price-asc') list.sort((a,b)=>(a.price||0)-(b.price||0));
+  if (sort === 'price-desc') list.sort((a,b)=>(b.price||0)-(a.price||0));
+  if (sort === 'rating') list.sort((a,b)=>(b.rating||0)-(a.rating||0));
+  if (sort === 'location') list.sort((a,b)=>(a.location||'').localeCompare(b.location||''));
+
+  const tbody = document.getElementById('listingsTable');
+  if (!list.length){
+    tbody.innerHTML = `<tr><td colspan="9"><div class="empty-state"><div class="empty-state-icon">🏠</div>No listings found.</div></td></tr>`;
+    return;
+  }
+  tbody.innerHTML = list.map(l => `
+    <tr>
+      <td><img class="table-photo" src="${photoUrl((l.photos&&l.photos[0])?l.photos[0].url:null)}" onerror="this.src='https://images.unsplash.com/photo-1582268611958-ebfd161ef9cf?w=200&q=60'"></td>
+      <td style="font-weight:600">${l.title}</td>
+      <td>${l.location||''}</td>
+      <td>${formatIDR(l.price)}</td>
+      <td>${l.bedrooms||'—'}</td>
+      <td>${l.guests||'—'}</td>
+      <td>★ ${l.rating||'—'}</td>
+      <td>
+        <div class="toggle">
+          <input type="checkbox" ${l.available!==false?'checked':''} onchange="toggleAvailable('${l._filename}', this.checked)">
+          <span class="toggle-track" onclick="this.previousElementSibling.click()"></span>
+        </div>
+      </td>
+      <td>
+        <a href="listing-form.html?file=${encodeURIComponent(l._filename)}" class="btn btn-outline btn-sm">Edit</a>
+        <button class="btn btn-danger btn-sm" onclick="confirmDelete('${l._filename}','${l._sha}','${l.title.replace(/'/g,"\\'")}')">Delete</button>
+      </td>
+    </tr>
+  `).join('');
+}
+
+async function toggleAvailable(filename, checked){
+  const listing = allListings.find(l => l._filename === filename);
+  if (!listing) return;
+  listing.available = checked;
+  showLoading();
+  try {
+    await saveListing(listing);
+    toast(`${listing.title} is now ${checked?'listed':'hidden'}`, 'success');
+  } catch(e){
+    toast('Failed to update: ' + e.message, 'error');
+  }
+  hideLoading();
+}
+
+function confirmDelete(filename, sha, title){
+  if (!confirm(`Delete "${title}"? This cannot be undone.`)) return;
+  deleteIt(filename, sha);
+}
+
+async function deleteIt(filename, sha){
+  showLoading();
+  try {
+    await deleteListingFile(filename, sha);
+    toast('Listing deleted', 'success');
+    await loadListings();
+  } catch(e){
+    toast('Failed to delete: ' + e.message, 'error');
+  }
+  hideLoading();
+}
+
+document.getElementById('searchInput').addEventListener('input', renderTable);
+document.getElementById('sortSelect').addEventListener('change', renderTable);
+loadListings();
+</script>
+</body>
+</html>

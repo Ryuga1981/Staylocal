@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Settings — StayLocal Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@400;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="admin-style.css">
+<script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
+</head>
+<body>
+<div class="admin-shell">
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo">Stay<span>Local</span></div>
+    <nav class="sidebar-nav">
+      <a href="dashboard.html" class="sidebar-link"><span class="sidebar-icon">📊</span> Dashboard</a>
+      <a href="listings.html" class="sidebar-link"><span class="sidebar-icon">🏠</span> Listings</a>
+      <a href="listing-form.html" class="sidebar-link"><span class="sidebar-icon">➕</span> Add Listing</a>
+      <a href="calendar.html" class="sidebar-link"><span class="sidebar-icon">📅</span> Availability</a>
+      <a href="promotions.html" class="sidebar-link"><span class="sidebar-icon">🏷️</span> Promotions</a>
+      <a href="photos.html" class="sidebar-link"><span class="sidebar-icon">🖼️</span> Photos</a>
+      <a href="settings.html" class="sidebar-link active"><span class="sidebar-icon">⚙️</span> Settings</a>
+      <a href="https://staylocalzahra.netlify.app" target="_blank" class="sidebar-link"><span class="sidebar-icon">🔗</span> View Live Site</a>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="sidebar-user" id="sidebarUser"></div>
+      <button class="sidebar-logout" onclick="doLogout()">Log out</button>
+    </div>
+  </aside>
+
+  <div class="main">
+    <div class="topbar">
+      <div style="display:flex;align-items:center;gap:12px">
+        <button class="menu-toggle" onclick="document.getElementById('sidebar').classList.toggle('open')">☰</button>
+        <div class="topbar-title">Settings</div>
+      </div>
+    </div>
+
+    <div class="content" style="max-width:600px">
+      <div class="card" style="margin-bottom:20px">
+        <h3 style="font-family:'Fraunces',serif;font-size:16px;margin-bottom:16px">GitHub Connection</h3>
+        <div class="field-group">
+          <label class="field-label">Personal Access Token</label>
+          <input id="s_token" type="password" class="field-input" placeholder="github_pat_...">
+          <div class="field-hint">Used to read/write listings directly to your repo. Stored locally in this browser only.</div>
+        </div>
+        <button class="btn btn-primary" onclick="saveGithubToken()">Save Token</button>
+      </div>
+
+      <div class="card" style="margin-bottom:20px">
+        <h3 style="font-family:'Fraunces',serif;font-size:16px;margin-bottom:16px">Google Maps</h3>
+        <div class="field-group">
+          <label class="field-label">Google Maps API Key</label>
+          <input id="s_mapskey" class="field-input" placeholder="AIza...">
+          <div class="field-hint">Required for the location pin picker in the listing form. Get one at console.cloud.google.com (enable Maps JavaScript API + Places API).</div>
+        </div>
+        <button class="btn btn-primary" onclick="saveMapsKey()">Save Key</button>
+      </div>
+
+      <div class="card">
+        <h3 style="font-family:'Fraunces',serif;font-size:16px;margin-bottom:16px">Site Info</h3>
+        <div class="field-group">
+          <label class="field-label">Site name</label>
+          <input id="s_sitename" class="field-input" value="StayLocal">
+        </div>
+        <div class="field-group">
+          <label class="field-label">Contact email</label>
+          <input id="s_email" class="field-input" placeholder="hello@staylocal.com">
+        </div>
+        <button class="btn btn-primary" onclick="saveSiteInfo()">Save</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="admin.js"></script>
+<script>
+requireAuth();
+
+document.getElementById('s_token').value = getToken();
+document.getElementById('s_mapskey').value = localStorage.getItem('sl_maps_key') || '';
+document.getElementById('s_sitename').value = localStorage.getItem('sl_sitename') || 'StayLocal';
+document.getElementById('s_email').value = localStorage.getItem('sl_email') || '';
+
+function saveGithubToken(){
+  setToken(document.getElementById('s_token').value.trim());
+  toast('GitHub token saved', 'success');
+}
+function saveMapsKey(){
+  localStorage.setItem('sl_maps_key', document.getElementById('s_mapskey').value.trim());
+  toast('Maps key saved — refresh listing form to apply', 'success');
+}
+function saveSiteInfo(){
+  localStorage.setItem('sl_sitename', document.getElementById('s_sitename').value.trim());
+  localStorage.setItem('sl_email', document.getElementById('s_email').value.trim());
+  toast('Site info saved', 'success');
+}
+</script>
+</body>
+</html>
