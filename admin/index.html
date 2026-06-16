@@ -6,6 +6,7 @@
   <title>StayLocal Admin</title>
 </head>
 <body>
+  <script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
   <script>
     window.CMS_MANUAL_INIT = true;
   </script>
@@ -14,8 +15,7 @@
     CMS.init({
       config: {
         backend: {
-          name: 'github',
-          repo: 'Ryuga1981/Staylocal',
+          name: 'git-gateway',
           branch: 'main'
         },
         media_folder: 'images',
