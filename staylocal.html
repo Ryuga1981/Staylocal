@@ -1,0 +1,1544 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>StayLocal — Find Your Place in Southeast Asia</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,600;0,9..144,700;1,9..144,300;1,9..144,400&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --teal:    #0D5C63;
+    --teal-lt: #1A8A94;
+    --sand:    #F5E6C8;
+    --coral:   #E8472A;
+    --coral-dk:#C33820;
+    --cream:   #FAFAF5;
+    --ink:     #12110F;
+    --ink-mid: #4A4844;
+    --ink-lt:  #8A8784;
+    --white:   #FFFFFF;
+    --border:  rgba(18,17,15,0.10);
+    --shadow-card: 0 2px 16px rgba(18,17,15,0.10);
+    --shadow-hover: 0 8px 32px rgba(18,17,15,0.16);
+    --r-sm: 8px;
+    --r-md: 14px;
+    --r-lg: 22px;
+    --r-pill: 100px;
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: 'Inter', sans-serif;
+    background: var(--cream);
+    color: var(--ink);
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+  }
+
+  /* ── NAV ── */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 40px;
+    height: 68px;
+    background: rgba(250,250,245,0.92);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+  }
+  .nav-logo {
+    font-family: 'Fraunces', serif;
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--teal);
+    letter-spacing: -0.5px;
+    text-decoration: none;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .nav-logo span { color: var(--coral); }
+  .nav-logo-dot {
+    width: 8px; height: 8px;
+    background: var(--coral);
+    border-radius: 50%;
+    display: inline-block;
+  }
+  .nav-links {
+    display: flex; align-items: center; gap: 28px;
+    list-style: none;
+  }
+  .nav-links a {
+    font-size: 14px; font-weight: 500;
+    color: var(--ink-mid);
+    text-decoration: none;
+    transition: color 0.2s;
+  }
+  .nav-links a:hover { color: var(--teal); }
+  .nav-right {
+    display: flex; align-items: center; gap: 12px;
+  }
+  .currency-pill {
+    display: flex; align-items: center; gap: 6px;
+    padding: 6px 14px;
+    border: 1px solid var(--border);
+    border-radius: var(--r-pill);
+    font-size: 13px; font-weight: 500;
+    cursor: pointer;
+    transition: border-color 0.2s;
+    background: transparent;
+    color: var(--ink);
+  }
+  .currency-pill:hover { border-color: var(--teal); }
+  .btn-host {
+    padding: 8px 20px;
+    background: var(--teal);
+    color: var(--white);
+    border: none; border-radius: var(--r-pill);
+    font-size: 14px; font-weight: 500;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.15s;
+  }
+  .btn-host:hover { background: var(--teal-lt); transform: translateY(-1px); }
+
+  /* ── HERO ── */
+  .hero {
+    min-height: 100vh;
+    padding-top: 68px;
+    position: relative;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    overflow: hidden;
+  }
+
+  /* Mosaic background grid */
+  .hero-mosaic {
+    position: absolute; inset: 0;
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    grid-template-rows: repeat(4, 1fr);
+    gap: 6px;
+    padding: 6px;
+    animation: driftUp 40s linear infinite;
+    will-change: transform;
+    transform: translateY(0);
+  }
+  @keyframes driftUp {
+    0%   { transform: translateY(0); }
+    100% { transform: translateY(-8%); }
+  }
+  .mosaic-tile {
+    border-radius: 10px;
+    background-size: cover;
+    background-position: center;
+    opacity: 0.88;
+  }
+  .hero-overlay {
+    position: absolute; inset: 0;
+    background: linear-gradient(
+      to bottom,
+      rgba(250,250,245,0.15) 0%,
+      rgba(13,92,99,0.55) 40%,
+      rgba(13,92,99,0.75) 100%
+    );
+  }
+
+  .hero-content {
+    position: relative; z-index: 10;
+    text-align: center;
+    padding: 0 24px;
+    max-width: 780px;
+  }
+  .hero-eyebrow {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: rgba(245,230,200,0.18);
+    border: 1px solid rgba(245,230,200,0.35);
+    padding: 6px 16px;
+    border-radius: var(--r-pill);
+    font-size: 12px; font-weight: 500;
+    color: var(--sand);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 24px;
+  }
+  .hero-eyebrow-dot {
+    width: 6px; height: 6px;
+    background: var(--coral);
+    border-radius: 50%;
+    animation: pulse 2s ease-in-out infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.5; transform: scale(0.8); }
+  }
+  .hero-h1 {
+    font-family: 'Fraunces', serif;
+    font-size: clamp(42px, 7vw, 80px);
+    font-weight: 300;
+    line-height: 1.05;
+    color: var(--white);
+    letter-spacing: -1.5px;
+    margin-bottom: 20px;
+  }
+  .hero-h1 em {
+    font-style: italic;
+    font-weight: 300;
+    color: var(--sand);
+  }
+  .hero-sub {
+    font-size: 17px;
+    color: rgba(245,230,200,0.85);
+    font-weight: 300;
+    margin-bottom: 40px;
+    line-height: 1.6;
+  }
+
+  /* Search bar */
+  .search-bar {
+    display: flex;
+    background: var(--white);
+    border-radius: var(--r-pill);
+    overflow: hidden;
+    box-shadow: 0 8px 40px rgba(13,92,99,0.35), 0 2px 8px rgba(0,0,0,0.1);
+    max-width: 680px;
+    width: 100%;
+    margin: 0 auto;
+  }
+  .search-field {
+    flex: 1;
+    display: flex; flex-direction: column;
+    padding: 16px 24px;
+    border-right: 1px solid var(--border);
+    cursor: pointer;
+    transition: background 0.15s;
+    min-width: 0;
+  }
+  .search-field:hover { background: #f5f5f0; }
+  .search-field:last-of-type { border-right: none; }
+  .search-label {
+    font-size: 11px; font-weight: 600;
+    text-transform: uppercase; letter-spacing: 0.06em;
+    color: var(--ink);
+    margin-bottom: 2px;
+  }
+  .search-value {
+    font-size: 14px;
+    color: var(--ink-lt);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .search-btn {
+    margin: 8px;
+    padding: 0 28px;
+    background: var(--coral);
+    color: var(--white);
+    border: none; border-radius: var(--r-pill);
+    font-size: 14px; font-weight: 600;
+    cursor: pointer;
+    display: flex; align-items: center; gap: 8px;
+    white-space: nowrap;
+    transition: background 0.2s, transform 0.15s;
+    flex-shrink: 0;
+  }
+  .search-btn:hover { background: var(--coral-dk); transform: scale(1.02); }
+
+  /* AI search toggle */
+  .ai-toggle {
+    margin-top: 16px;
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 8px 18px;
+    background: rgba(245,230,200,0.15);
+    border: 1px solid rgba(245,230,200,0.3);
+    border-radius: var(--r-pill);
+    font-size: 13px; color: var(--sand);
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+  .ai-toggle:hover { background: rgba(245,230,200,0.25); }
+  .ai-icon { font-size: 15px; }
+
+  /* Stats row */
+  .hero-stats {
+    position: absolute; bottom: 40px; left: 0; right: 0;
+    display: flex; justify-content: center; gap: 48px;
+    z-index: 10;
+  }
+  .hero-stat { text-align: center; }
+  .hero-stat-n {
+    font-family: 'Fraunces', serif;
+    font-size: 28px; font-weight: 600;
+    color: var(--white);
+    line-height: 1;
+  }
+  .hero-stat-l {
+    font-size: 12px; color: rgba(245,230,200,0.7);
+    margin-top: 4px;
+    text-transform: uppercase; letter-spacing: 0.05em;
+  }
+
+  /* ── CATEGORIES ── */
+  .section { padding: 80px 40px; }
+  .section-inner { max-width: 1200px; margin: 0 auto; }
+
+  .categories {
+    background: var(--white);
+    padding: 32px 40px;
+  }
+  .category-scroll {
+    display: flex; gap: 12px;
+    overflow-x: auto;
+    scrollbar-width: none;
+    padding-bottom: 4px;
+  }
+  .category-scroll::-webkit-scrollbar { display: none; }
+  .cat-pill {
+    display: flex; align-items: center; gap: 8px;
+    padding: 10px 20px;
+    border: 1.5px solid var(--border);
+    border-radius: var(--r-pill);
+    font-size: 14px; font-weight: 500;
+    cursor: pointer;
+    white-space: nowrap;
+    color: var(--ink-mid);
+    background: transparent;
+    transition: all 0.2s;
+    flex-shrink: 0;
+  }
+  .cat-pill:hover, .cat-pill.active {
+    border-color: var(--teal);
+    color: var(--teal);
+    background: rgba(13,92,99,0.05);
+  }
+  .cat-pill.active { background: rgba(13,92,99,0.08); }
+  .cat-icon { font-size: 16px; }
+
+  /* ── LISTINGS ── */
+  .listings-section { padding: 64px 40px; }
+  .section-header {
+    display: flex; justify-content: space-between; align-items: flex-end;
+    margin-bottom: 36px;
+    max-width: 1200px; margin-left: auto; margin-right: auto;
+    margin-bottom: 36px;
+  }
+  .section-title {
+    font-family: 'Fraunces', serif;
+    font-size: clamp(28px, 3.5vw, 40px);
+    font-weight: 400;
+    line-height: 1.1;
+    letter-spacing: -0.5px;
+  }
+  .section-title em { font-style: italic; color: var(--teal); }
+  .section-sub {
+    font-size: 15px; color: var(--ink-lt);
+    margin-top: 6px;
+  }
+  .see-all {
+    font-size: 14px; font-weight: 500;
+    color: var(--teal);
+    text-decoration: none;
+    display: flex; align-items: center; gap: 4px;
+    white-space: nowrap;
+  }
+  .see-all:hover { text-decoration: underline; }
+
+  .listings-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 28px;
+    max-width: 1200px; margin: 0 auto;
+  }
+
+  .listing-card {
+    background: var(--white);
+    border-radius: var(--r-lg);
+    overflow: hidden;
+    box-shadow: var(--shadow-card);
+    transition: box-shadow 0.25s, transform 0.25s;
+    cursor: pointer;
+    position: relative;
+  }
+  .listing-card:hover {
+    box-shadow: var(--shadow-hover);
+    transform: translateY(-4px);
+  }
+  .card-photo {
+    position: relative;
+    height: 220px;
+    overflow: hidden;
+  }
+  .card-photo img {
+    width: 100%; height: 100%;
+    object-fit: cover;
+    transition: transform 0.5s ease;
+    display: block;
+  }
+  .listing-card:hover .card-photo img { transform: scale(1.06); }
+  .card-badge {
+    position: absolute; top: 14px; left: 14px;
+    padding: 5px 12px;
+    border-radius: var(--r-pill);
+    font-size: 11px; font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+  .badge-fav { background: var(--white); color: var(--ink); }
+  .badge-new { background: var(--coral); color: var(--white); }
+  .badge-verified { background: var(--teal); color: var(--white); }
+  .card-wishlist {
+    position: absolute; top: 14px; right: 14px;
+    width: 34px; height: 34px;
+    background: rgba(255,255,255,0.9);
+    border-radius: 50%;
+    border: none; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px;
+    transition: transform 0.2s;
+  }
+  .card-wishlist:hover { transform: scale(1.15); }
+  .card-body { padding: 18px 20px 20px; }
+  .card-loc {
+    font-size: 12px; color: var(--ink-lt);
+    text-transform: uppercase; letter-spacing: 0.06em;
+    margin-bottom: 4px;
+  }
+  .card-title {
+    font-family: 'Fraunces', serif;
+    font-size: 17px; font-weight: 400;
+    line-height: 1.25;
+    margin-bottom: 8px;
+    color: var(--ink);
+  }
+  .card-meta {
+    font-size: 13px; color: var(--ink-lt);
+    margin-bottom: 14px;
+  }
+  .card-footer {
+    display: flex; align-items: center; justify-content: space-between;
+    padding-top: 14px;
+    border-top: 1px solid var(--border);
+  }
+  .card-price {
+    display: flex; flex-direction: column;
+  }
+  .card-price-main {
+    font-size: 18px; font-weight: 600;
+    color: var(--ink);
+    line-height: 1;
+  }
+  .card-price-unit {
+    font-size: 12px; color: var(--ink-lt);
+    margin-top: 2px;
+  }
+  .card-rating {
+    display: flex; align-items: center; gap: 4px;
+    font-size: 13px; font-weight: 500;
+  }
+  .star { color: var(--coral); }
+
+  /* ── AI FEATURE SECTION ── */
+  .ai-section {
+    background: var(--teal);
+    padding: 80px 40px;
+    color: var(--white);
+    overflow: hidden;
+    position: relative;
+  }
+  .ai-section::before {
+    content: '';
+    position: absolute;
+    top: -120px; right: -120px;
+    width: 480px; height: 480px;
+    border-radius: 50%;
+    background: rgba(26,138,148,0.3);
+    pointer-events: none;
+  }
+  .ai-inner {
+    max-width: 1200px; margin: 0 auto;
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 80px; align-items: center;
+  }
+  .ai-label {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 6px 14px;
+    background: rgba(245,230,200,0.15);
+    border: 1px solid rgba(245,230,200,0.3);
+    border-radius: var(--r-pill);
+    font-size: 12px; letter-spacing: 0.08em;
+    text-transform: uppercase; color: var(--sand);
+    margin-bottom: 20px;
+  }
+  .ai-h2 {
+    font-family: 'Fraunces', serif;
+    font-size: clamp(32px, 4vw, 50px);
+    font-weight: 300; line-height: 1.1;
+    letter-spacing: -0.5px;
+    margin-bottom: 20px;
+  }
+  .ai-h2 em { font-style: italic; color: var(--sand); }
+  .ai-body { font-size: 16px; line-height: 1.7; color: rgba(255,255,255,0.8); margin-bottom: 32px; }
+
+  .ai-features-list { display: flex; flex-direction: column; gap: 16px; }
+  .ai-feature-item {
+    display: flex; align-items: flex-start; gap: 14px;
+  }
+  .ai-feature-icon {
+    width: 40px; height: 40px; flex-shrink: 0;
+    background: rgba(245,230,200,0.15);
+    border-radius: var(--r-sm);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px;
+  }
+  .ai-feature-text strong { display: block; font-size: 14px; font-weight: 600; margin-bottom: 2px; }
+  .ai-feature-text span { font-size: 13px; color: rgba(255,255,255,0.65); }
+
+  /* Chat demo */
+  .ai-demo {
+    background: var(--cream);
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 24px 64px rgba(0,0,0,0.25);
+    position: relative;
+  }
+  .demo-header {
+    background: var(--white);
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; gap: 12px;
+  }
+  .demo-avatar {
+    width: 36px; height: 36px;
+    background: var(--teal);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px; color: var(--white);
+  }
+  .demo-name { font-size: 14px; font-weight: 600; }
+  .demo-status { font-size: 12px; color: var(--ink-lt); }
+  .demo-online {
+    width: 8px; height: 8px; background: #22C55E;
+    border-radius: 50%; margin-left: auto;
+  }
+
+  .demo-messages { padding: 20px; display: flex; flex-direction: column; gap: 12px; }
+  .msg { max-width: 85%; }
+  .msg-user {
+    align-self: flex-end;
+    background: var(--teal);
+    color: var(--white);
+    padding: 10px 16px;
+    border-radius: 18px 18px 4px 18px;
+    font-size: 14px;
+  }
+  .msg-ai {
+    align-self: flex-start;
+    background: var(--white);
+    color: var(--ink);
+    padding: 12px 16px;
+    border-radius: 18px 18px 18px 4px;
+    font-size: 14px; line-height: 1.5;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+  }
+  .msg-ai strong { color: var(--teal); }
+  .demo-input {
+    margin: 0 20px 20px;
+    display: flex;
+    background: var(--white);
+    border-radius: var(--r-pill);
+    border: 1.5px solid var(--border);
+    overflow: hidden;
+    align-items: center;
+  }
+  .demo-input input {
+    flex: 1; border: none; outline: none;
+    padding: 12px 18px;
+    font-size: 13px; font-family: inherit;
+    background: transparent;
+    color: var(--ink);
+  }
+  .demo-input button {
+    margin: 5px;
+    padding: 8px 16px;
+    background: var(--coral);
+    color: var(--white);
+    border: none; border-radius: var(--r-pill);
+    font-size: 13px; font-weight: 500;
+    cursor: pointer;
+  }
+
+  /* ── WHY STAYLOCAL ── */
+  .why-section { padding: 80px 40px; background: var(--white); }
+  .why-inner { max-width: 1200px; margin: 0 auto; }
+  .why-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2px;
+    background: var(--border);
+    border-radius: var(--r-lg);
+    overflow: hidden;
+    margin-top: 52px;
+  }
+  .why-card {
+    background: var(--white);
+    padding: 44px 36px;
+  }
+  .why-card:hover { background: #fafaf8; }
+  .why-number {
+    font-family: 'Fraunces', serif;
+    font-size: 52px; font-weight: 300;
+    color: var(--teal); opacity: 0.25;
+    line-height: 1;
+    margin-bottom: 16px;
+  }
+  .why-icon { font-size: 28px; margin-bottom: 14px; }
+  .why-title {
+    font-family: 'Fraunces', serif;
+    font-size: 22px; font-weight: 400;
+    margin-bottom: 12px;
+    line-height: 1.2;
+  }
+  .why-text { font-size: 14px; color: var(--ink-mid); line-height: 1.7; }
+
+  /* ── DESTINATIONS ── */
+  .dest-section { padding: 80px 40px; }
+  .dest-inner { max-width: 1200px; margin: 0 auto; }
+  .dest-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr;
+    grid-template-rows: 240px 240px;
+    gap: 14px;
+    margin-top: 40px;
+  }
+  .dest-card {
+    border-radius: var(--r-md);
+    overflow: hidden;
+    position: relative;
+    cursor: pointer;
+  }
+  .dest-card:first-child { grid-row: 1 / 3; }
+  .dest-img {
+    width: 100%; height: 100%;
+    object-fit: cover;
+    display: block;
+    transition: transform 0.5s ease;
+  }
+  .dest-card:hover .dest-img { transform: scale(1.06); }
+  .dest-overlay {
+    position: absolute; inset: 0;
+    background: linear-gradient(to top, rgba(13,92,99,0.75) 0%, transparent 55%);
+  }
+  .dest-info {
+    position: absolute; bottom: 0; left: 0; right: 0;
+    padding: 20px 22px;
+    color: var(--white);
+  }
+  .dest-name {
+    font-family: 'Fraunces', serif;
+    font-size: 22px; font-weight: 400;
+  }
+  .dest-count { font-size: 13px; opacity: 0.8; margin-top: 2px; }
+
+  /* ── HOST CTA ── */
+  .host-cta {
+    background: var(--sand);
+    padding: 80px 40px;
+  }
+  .host-inner {
+    max-width: 1200px; margin: 0 auto;
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 60px; align-items: center;
+  }
+  .host-h2 {
+    font-family: 'Fraunces', serif;
+    font-size: clamp(32px, 4vw, 48px);
+    font-weight: 400; line-height: 1.1;
+    letter-spacing: -0.5px;
+    margin-bottom: 16px;
+  }
+  .host-h2 em { font-style: italic; color: var(--teal); }
+  .host-body { font-size: 16px; color: var(--ink-mid); line-height: 1.7; margin-bottom: 32px; }
+  .host-earnings {
+    display: flex; gap: 32px; margin-bottom: 36px;
+  }
+  .host-earn-item {}
+  .host-earn-n {
+    font-family: 'Fraunces', serif;
+    font-size: 32px; font-weight: 600; color: var(--teal);
+  }
+  .host-earn-l { font-size: 13px; color: var(--ink-lt); margin-top: 2px; }
+  .btn-primary {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 14px 28px;
+    background: var(--teal);
+    color: var(--white);
+    border: none; border-radius: var(--r-pill);
+    font-size: 15px; font-weight: 500;
+    cursor: pointer;
+    text-decoration: none;
+    transition: background 0.2s, transform 0.15s;
+  }
+  .btn-primary:hover { background: var(--teal-lt); transform: translateY(-1px); }
+  .btn-secondary {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 14px 28px;
+    background: transparent;
+    color: var(--teal);
+    border: 1.5px solid var(--teal);
+    border-radius: var(--r-pill);
+    font-size: 15px; font-weight: 500;
+    cursor: pointer;
+    text-decoration: none;
+    margin-left: 12px;
+    transition: all 0.2s;
+  }
+  .btn-secondary:hover { background: rgba(13,92,99,0.06); }
+
+  .host-visual {
+    position: relative;
+  }
+  .host-photo-stack {
+    position: relative; height: 420px;
+  }
+  .host-photo {
+    position: absolute;
+    border-radius: var(--r-lg);
+    overflow: hidden;
+    box-shadow: var(--shadow-hover);
+  }
+  .host-photo img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .host-photo-main {
+    width: 75%; height: 340px;
+    top: 0; left: 0;
+  }
+  .host-photo-accent {
+    width: 55%; height: 220px;
+    bottom: 0; right: 0;
+    border: 4px solid var(--sand);
+  }
+  .host-badge {
+    position: absolute; top: 24px; right: 0;
+    background: var(--white);
+    border-radius: var(--r-md);
+    padding: 14px 18px;
+    box-shadow: var(--shadow-hover);
+    text-align: center;
+    z-index: 2;
+  }
+  .host-badge-n {
+    font-family: 'Fraunces', serif;
+    font-size: 24px; font-weight: 600; color: var(--teal);
+  }
+  .host-badge-l { font-size: 11px; color: var(--ink-lt); margin-top: 2px; }
+
+  /* ── TESTIMONIALS ── */
+  .testimonials { padding: 80px 40px; background: var(--white); }
+  .testimonials-inner { max-width: 1200px; margin: 0 auto; }
+  .testimonials-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr);
+    gap: 24px; margin-top: 48px;
+  }
+  .testimonial-card {
+    background: var(--cream);
+    border-radius: var(--r-lg);
+    padding: 32px 28px;
+  }
+  .t-stars { color: var(--coral); font-size: 16px; letter-spacing: 2px; margin-bottom: 16px; }
+  .t-quote {
+    font-family: 'Fraunces', serif;
+    font-size: 17px; font-weight: 300; font-style: italic;
+    line-height: 1.5; color: var(--ink);
+    margin-bottom: 20px;
+  }
+  .t-author { display: flex; align-items: center; gap: 12px; }
+  .t-avatar {
+    width: 40px; height: 40px; border-radius: 50%;
+    object-fit: cover; display: block;
+  }
+  .t-name { font-size: 14px; font-weight: 600; }
+  .t-loc { font-size: 12px; color: var(--ink-lt); }
+
+  /* ── FOOTER ── */
+  footer {
+    background: var(--ink);
+    color: rgba(255,255,255,0.7);
+    padding: 64px 40px 40px;
+  }
+  .footer-inner {
+    max-width: 1200px; margin: 0 auto;
+  }
+  .footer-top {
+    display: grid; grid-template-columns: 2fr 1fr 1fr 1fr;
+    gap: 48px; margin-bottom: 48px;
+  }
+  .footer-brand {}
+  .footer-logo {
+    font-family: 'Fraunces', serif;
+    font-size: 24px; font-weight: 700;
+    color: var(--white);
+    margin-bottom: 12px;
+  }
+  .footer-logo span { color: var(--coral); }
+  .footer-tagline { font-size: 14px; line-height: 1.6; max-width: 260px; }
+  .footer-lang-row {
+    display: flex; gap: 8px; flex-wrap: wrap; margin-top: 20px;
+  }
+  .lang-btn {
+    padding: 5px 12px;
+    border: 1px solid rgba(255,255,255,0.2);
+    border-radius: var(--r-pill);
+    font-size: 12px;
+    cursor: pointer; background: transparent;
+    color: rgba(255,255,255,0.7);
+    transition: all 0.2s;
+  }
+  .lang-btn:hover, .lang-btn.active {
+    border-color: var(--sand);
+    color: var(--sand);
+  }
+  .footer-col h4 {
+    font-size: 13px; font-weight: 600;
+    color: var(--white);
+    text-transform: uppercase; letter-spacing: 0.06em;
+    margin-bottom: 16px;
+  }
+  .footer-col ul { list-style: none; display: flex; flex-direction: column; gap: 10px; }
+  .footer-col ul a {
+    font-size: 14px; color: rgba(255,255,255,0.6);
+    text-decoration: none;
+    transition: color 0.2s;
+  }
+  .footer-col ul a:hover { color: var(--white); }
+  .footer-bottom {
+    display: flex; align-items: center; justify-content: space-between;
+    padding-top: 32px;
+    border-top: 1px solid rgba(255,255,255,0.1);
+    font-size: 13px;
+  }
+  .footer-currency-row { display: flex; gap: 8px; }
+  .curr-btn {
+    padding: 4px 10px;
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: var(--r-pill);
+    font-size: 12px; cursor: pointer;
+    background: transparent; color: rgba(255,255,255,0.6);
+    transition: all 0.2s;
+  }
+  .curr-btn:hover, .curr-btn.active { border-color: var(--sand); color: var(--sand); }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 900px) {
+    nav { padding: 0 20px; }
+    .nav-links { display: none; }
+    .section { padding: 56px 20px; }
+    .listings-section { padding: 48px 20px; }
+    .listings-grid { grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 18px; }
+    .ai-inner { grid-template-columns: 1fr; gap: 48px; }
+    .why-grid { grid-template-columns: 1fr; }
+    .dest-grid { grid-template-columns: 1fr 1fr; grid-template-rows: auto; }
+    .dest-card:first-child { grid-row: auto; grid-column: 1 / -1; height: 240px; }
+    .host-inner { grid-template-columns: 1fr; }
+    .host-visual { display: none; }
+    .testimonials-grid { grid-template-columns: 1fr; }
+    .footer-top { grid-template-columns: 1fr 1fr; gap: 32px; }
+    .hero-stats { gap: 24px; }
+    .search-bar { flex-direction: column; border-radius: var(--r-lg); }
+    .search-field { border-right: none; border-bottom: 1px solid var(--border); }
+    .search-btn { margin: 10px; padding: 14px; justify-content: center; border-radius: var(--r-md); }
+    .why-section { padding: 56px 20px; }
+    .dest-section { padding: 56px 20px; }
+    .host-cta { padding: 56px 20px; }
+    .testimonials { padding: 56px 20px; }
+    footer { padding: 48px 20px 32px; }
+    .footer-bottom { flex-direction: column; gap: 16px; text-align: center; }
+    .categories { padding: 20px; }
+  }
+
+  @media (max-width: 480px) {
+    .hero-stats { flex-wrap: wrap; gap: 20px; bottom: 24px; }
+    .dest-grid { grid-template-columns: 1fr; }
+    .dest-card:first-child { height: 200px; }
+    .footer-top { grid-template-columns: 1fr; }
+    .host-earnings { flex-wrap: wrap; gap: 20px; }
+  }
+
+  /* Scroll reveal */
+  .reveal {
+    opacity: 0; transform: translateY(24px);
+    transition: opacity 0.6s ease, transform 0.6s ease;
+  }
+  .reveal.visible { opacity: 1; transform: none; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .hero-mosaic { animation: none; }
+    .listing-card, .dest-img, .card-photo img { transition: none; }
+    .reveal { opacity: 1; transform: none; transition: none; }
+  }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a href="#" class="nav-logo">
+    Stay<span>Local</span>
+  </a>
+  <ul class="nav-links">
+    <li><a href="#listings">Explore</a></li>
+    <li><a href="#destinations">Destinations</a></li>
+    <li><a href="#ai">AI Features</a></li>
+    <li><a href="#host">Become a Host</a></li>
+  </ul>
+  <div class="nav-right">
+    <button class="currency-pill" id="currencyBtn">
+      <span>🇮🇩</span> IDR
+      <span style="font-size:10px; color:var(--ink-lt)">▾</span>
+    </button>
+    <button class="btn-host">List your space</button>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <!-- Mosaic background -->
+  <div class="hero-mosaic" id="mosaic">
+    <!-- Tiles generated by JS -->
+  </div>
+  <div class="hero-overlay"></div>
+
+  <div class="hero-content">
+    <div class="hero-eyebrow">
+      <span class="hero-eyebrow-dot"></span>
+      Southeast Asia's rental platform
+    </div>
+    <h1 class="hero-h1">Find your place<br>in <em>Southeast Asia</em></h1>
+    <p class="hero-sub">8+ million homes in Indonesia, Thailand, Vietnam,<br>the Philippines and beyond — priced in your currency.</p>
+
+    <div class="search-bar">
+      <div class="search-field">
+        <span class="search-label">Where</span>
+        <span class="search-value">Bali, Ubud, Bangkok…</span>
+      </div>
+      <div class="search-field">
+        <span class="search-label">Check in</span>
+        <span class="search-value">Add dates</span>
+      </div>
+      <div class="search-field">
+        <span class="search-label">Guests</span>
+        <span class="search-value">Add guests</span>
+      </div>
+      <button class="search-btn" onclick="handleSearch()">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+        Search
+      </button>
+    </div>
+
+    <button class="ai-toggle" onclick="scrollToAI()">
+      <span class="ai-icon">✦</span>
+      Try AI search — "villa with pool under Rp 2 juta"
+    </button>
+  </div>
+
+  <div class="hero-stats">
+    <div class="hero-stat">
+      <div class="hero-stat-n">8.2M+</div>
+      <div class="hero-stat-l">Listings</div>
+    </div>
+    <div class="hero-stat">
+      <div class="hero-stat-n">6</div>
+      <div class="hero-stat-l">Currencies</div>
+    </div>
+    <div class="hero-stat">
+      <div class="hero-stat-n">240k+</div>
+      <div class="hero-stat-l">Verified hosts</div>
+    </div>
+    <div class="hero-stat">
+      <div class="hero-stat-n">4.8★</div>
+      <div class="hero-stat-l">Avg. rating</div>
+    </div>
+  </div>
+</section>
+
+<!-- CATEGORY PILLS -->
+<div class="categories">
+  <div class="category-scroll">
+    <button class="cat-pill active"><span class="cat-icon">🏠</span> All stays</button>
+    <button class="cat-pill"><span class="cat-icon">🏖️</span> Beach</button>
+    <button class="cat-pill"><span class="cat-icon">🌊</span> With pool</button>
+    <button class="cat-pill"><span class="cat-icon">🌿</span> Rice fields</button>
+    <button class="cat-pill"><span class="cat-icon">🏔️</span> Mountain</button>
+    <button class="cat-pill"><span class="cat-icon">🏙️</span> City</button>
+    <button class="cat-pill"><span class="cat-icon">💎</span> Villas</button>
+    <button class="cat-pill"><span class="cat-icon">💸</span> Budget</button>
+    <button class="cat-pill"><span class="cat-icon">✅</span> Verified</button>
+    <button class="cat-pill"><span class="cat-icon">⚡</span> Instant book</button>
+  </div>
+</div>
+
+<!-- LISTINGS -->
+<section class="listings-section" id="listings">
+  <div class="section-header">
+    <div>
+      <h2 class="section-title">Trending in <em>Bali</em></h2>
+      <p class="section-sub">Handpicked villas, all priced in Rupiah</p>
+    </div>
+    <a href="#" class="see-all">See all Bali →</a>
+  </div>
+  <div class="listings-grid" id="listingsGrid"></div>
+</section>
+
+<!-- AI SECTION -->
+<section class="ai-section" id="ai">
+  <div class="ai-inner">
+    <div>
+      <div class="ai-label">✦ Powered by Claude AI</div>
+      <h2 class="ai-h2">Search like you<br><em>think</em>, not like<br>a search engine</h2>
+      <p class="ai-body">Type what you're looking for in plain language — in English, Bahasa Indonesia, or Thai. Our AI understands what you mean and finds exactly what you need.</p>
+      <div class="ai-features-list">
+        <div class="ai-feature-item">
+          <div class="ai-feature-icon">🔍</div>
+          <div class="ai-feature-text">
+            <strong>Natural language search</strong>
+            <span>"Romantic villa near rice fields under Rp 3 juta"</span>
+          </div>
+        </div>
+        <div class="ai-feature-item">
+          <div class="ai-feature-icon">✍️</div>
+          <div class="ai-feature-text">
+            <strong>AI listing writer</strong>
+            <span>Upload photos → get a perfect listing in EN + ID in seconds</span>
+          </div>
+        </div>
+        <div class="ai-feature-item">
+          <div class="ai-feature-icon">💰</div>
+          <div class="ai-feature-text">
+            <strong>Smart price advisor</strong>
+            <span>AI sets your price based on season, events, and local demand</span>
+          </div>
+        </div>
+        <div class="ai-feature-item">
+          <div class="ai-feature-icon">🗺️</div>
+          <div class="ai-feature-text">
+            <strong>Local trip planner</strong>
+            <span>Chat with an AI guide who actually knows your neighborhood</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Chat demo -->
+    <div class="ai-demo">
+      <div class="demo-header">
+        <div class="demo-avatar">✦</div>
+        <div>
+          <div class="demo-name">StayLocal AI</div>
+          <div class="demo-status">Local guide · Trip planner</div>
+        </div>
+        <div class="demo-online"></div>
+      </div>
+      <div class="demo-messages" id="demoMessages">
+        <div class="msg msg-user">Villa dengan kolam renang untuk 6 orang di Ubud, budget 2 juta per malam</div>
+        <div class="msg msg-ai">Found <strong>12 villas</strong> in Ubud with pools for 6 guests under <strong>Rp 2.000.000/night</strong> 🌿<br><br>Top pick: <strong>Villa Tirta Ubud</strong> — private infinity pool, rice field views, 4 bedrooms. <strong>Rp 1.850.000/night</strong> · ★ 4.96</div>
+        <div class="msg msg-user">What should we do near this villa?</div>
+        <div class="msg msg-ai">Ubud is magical! Within 10 min of the villa:<br>🍳 <strong>Cooking class</strong> at Paon Bali (Rp 350k/person)<br>🌅 <strong>Campuhan Ridge Walk</strong> — sunrise hike, free<br>🎭 <strong>Kecak fire dance</strong> at Uluwatu, Rp 150k<br>🛵 Scooter rental ~Rp 80k/day to explore on your own</div>
+      </div>
+      <div class="demo-input">
+        <input type="text" placeholder="Ask anything about your trip…" id="demoInput" onkeydown="handleDemoKey(event)">
+        <button onclick="sendDemoMessage()">Send</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- WHY STAYLOCAL -->
+<section class="why-section">
+  <div class="why-inner">
+    <div class="section-header" style="margin-bottom:0">
+      <div>
+        <h2 class="section-title">Built for <em>here</em>,<br>not everywhere</h2>
+        <p class="section-sub">What we do differently</p>
+      </div>
+    </div>
+    <div class="why-grid reveal">
+      <div class="why-card">
+        <div class="why-icon">💱</div>
+        <h3 class="why-title">Your currency, always</h3>
+        <p class="why-text">Prices in IDR, THB, VND, PHP, MYR — never converted from USD. What you see is what you pay, with local payment methods like GoPay, OVO, PromptPay, and GCash.</p>
+      </div>
+      <div class="why-card">
+        <div class="why-icon">🤖</div>
+        <h3 class="why-title">AI that speaks Bahasa</h3>
+        <p class="why-text">Search in Bahasa Indonesia, Thai, or Vietnamese. Our AI understands local expressions, landmarks, and neighborhoods — not just translated English.</p>
+      </div>
+      <div class="why-card">
+        <div class="why-icon">🛡️</div>
+        <h3 class="why-title">Local trust signals</h3>
+        <p class="why-text">KTP and SIM verification for Indonesian hosts. Every listing manually reviewed by our local team. AI-powered guest screening on every booking request.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- DESTINATIONS -->
+<section class="dest-section" id="destinations">
+  <div class="dest-inner">
+    <div class="section-header">
+      <div>
+        <h2 class="section-title">Where do you<br>want to <em>wake up?</em></h2>
+      </div>
+      <a href="#" class="see-all">All destinations →</a>
+    </div>
+    <div class="dest-grid reveal">
+      <div class="dest-card" style="height:494px">
+        <img src="https://images.unsplash.com/photo-1537996194471-e657df975ab4?w=800&q=80" alt="Bali" class="dest-img">
+        <div class="dest-overlay"></div>
+        <div class="dest-info">
+          <div class="dest-name">Bali, Indonesia</div>
+          <div class="dest-count">3,200+ villas · from Rp 350k/night</div>
+        </div>
+      </div>
+      <div class="dest-card">
+        <img src="https://images.unsplash.com/photo-1547400795-8e4b56bbf5f6?w=600&q=80" alt="Bangkok" class="dest-img">
+        <div class="dest-overlay"></div>
+        <div class="dest-info">
+          <div class="dest-name">Bangkok</div>
+          <div class="dest-count">1,800+ homes · from ฿ 800/night</div>
+        </div>
+      </div>
+      <div class="dest-card">
+        <img src="https://images.unsplash.com/photo-1555400038-63f5ba517a47?w=600&q=80" alt="Hanoi" class="dest-img">
+        <div class="dest-overlay"></div>
+        <div class="dest-info">
+          <div class="dest-name">Hanoi</div>
+          <div class="dest-count">940+ stays · from ₫ 450k/night</div>
+        </div>
+      </div>
+      <div class="dest-card">
+        <img src="https://images.unsplash.com/photo-1518509562904-e7ef99cdcc86?w=600&q=80" alt="Bandung" class="dest-img">
+        <div class="dest-overlay"></div>
+        <div class="dest-info">
+          <div class="dest-name">Bandung</div>
+          <div class="dest-count">620+ homes · from Rp 280k/night</div>
+        </div>
+      </div>
+      <div class="dest-card">
+        <img src="https://images.unsplash.com/photo-1552465011-b4e21bf6e79a?w=600&q=80" alt="Phuket" class="dest-img">
+        <div class="dest-overlay"></div>
+        <div class="dest-info">
+          <div class="dest-name">Phuket</div>
+          <div class="dest-count">2,100+ villas · from ฿ 1,200/night</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- HOST CTA -->
+<section class="host-cta" id="host">
+  <div class="host-inner">
+    <div>
+      <h2 class="host-h2">Your home could<br>be earning in <em>Rupiah</em></h2>
+      <p class="host-body">List your villa, apartment, or spare room and reach guests from around the world. Our AI writes your listing, sets your price, and screens every guest — so you don't have to.</p>
+      <div class="host-earnings">
+        <div class="host-earn-item">
+          <div class="host-earn-n">Rp 8.4 jt</div>
+          <div class="host-earn-l">Avg. monthly earnings</div>
+        </div>
+        <div class="host-earn-item">
+          <div class="host-earn-n">68%</div>
+          <div class="host-earn-l">Avg. occupancy rate</div>
+        </div>
+        <div class="host-earn-item">
+          <div class="host-earn-n">3 min</div>
+          <div class="host-earn-l">To list with AI</div>
+        </div>
+      </div>
+      <a href="#" class="btn-primary">Start hosting →</a>
+      <a href="#" class="btn-secondary">See how it works</a>
+    </div>
+    <div class="host-visual">
+      <div class="host-photo-stack">
+        <div class="host-photo host-photo-main">
+          <img src="https://images.unsplash.com/photo-1582268611958-ebfd161ef9cf?w=600&q=80" alt="Villa">
+        </div>
+        <div class="host-photo host-photo-accent">
+          <img src="https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=400&q=80" alt="Pool villa">
+        </div>
+        <div class="host-badge">
+          <div class="host-badge-n">★ 4.96</div>
+          <div class="host-badge-l">Superhost</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TESTIMONIALS -->
+<section class="testimonials">
+  <div class="testimonials-inner">
+    <div class="section-header">
+      <div>
+        <h2 class="section-title">What guests<br>are <em>saying</em></h2>
+      </div>
+    </div>
+    <div class="testimonials-grid reveal">
+      <div class="testimonial-card">
+        <div class="t-stars">★★★★★</div>
+        <p class="t-quote">"Finally I can see prices in Rupiah. Booking felt easy and safe — paid with GoPay in seconds."</p>
+        <div class="t-author">
+          <img src="https://i.pravatar.cc/80?img=47" alt="" class="t-avatar">
+          <div>
+            <div class="t-name">Dewi Rahayu</div>
+            <div class="t-loc">Jakarta, Indonesia</div>
+          </div>
+        </div>
+      </div>
+      <div class="testimonial-card">
+        <div class="t-stars">★★★★★</div>
+        <p class="t-quote">"The AI trip planner suggested a cooking class 5 minutes from our villa. It was the highlight of the whole trip."</p>
+        <div class="t-author">
+          <img src="https://i.pravatar.cc/80?img=12" alt="" class="t-avatar">
+          <div>
+            <div class="t-name">James Worthington</div>
+            <div class="t-loc">Melbourne, Australia</div>
+          </div>
+        </div>
+      </div>
+      <div class="testimonial-card">
+        <div class="t-stars">★★★★★</div>
+        <p class="t-quote">"I listed my Bandung guesthouse in 3 minutes. The AI wrote my description in Bahasa and English. First booking came in 2 days."</p>
+        <div class="t-author">
+          <img src="https://i.pravatar.cc/80?img=32" alt="" class="t-avatar">
+          <div>
+            <div class="t-name">Angga Pratama</div>
+            <div class="t-loc">Host · Bandung</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-inner">
+    <div class="footer-top">
+      <div class="footer-brand">
+        <div class="footer-logo">Stay<span>Local</span></div>
+        <p class="footer-tagline">Southeast Asia's rental platform — built for local hosts and global travelers who want something real.</p>
+        <div class="footer-lang-row">
+          <button class="lang-btn active">English</button>
+          <button class="lang-btn">Bahasa</button>
+          <button class="lang-btn">ภาษาไทย</button>
+          <button class="lang-btn">Tiếng Việt</button>
+        </div>
+      </div>
+      <div class="footer-col">
+        <h4>Explore</h4>
+        <ul>
+          <li><a href="#">Bali villas</a></li>
+          <li><a href="#">Bangkok apartments</a></li>
+          <li><a href="#">Phuket beach houses</a></li>
+          <li><a href="#">Hanoi guesthouses</a></li>
+          <li><a href="#">Bandung homestays</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Hosting</h4>
+        <ul>
+          <li><a href="#">List your space</a></li>
+          <li><a href="#">AI listing writer</a></li>
+          <li><a href="#">Price advisor</a></li>
+          <li><a href="#">Host resources</a></li>
+          <li><a href="#">Superhost program</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Company</h4>
+        <ul>
+          <li><a href="#">About StayLocal</a></li>
+          <li><a href="#">Newsroom</a></li>
+          <li><a href="#">Careers</a></li>
+          <li><a href="#">Trust & safety</a></li>
+          <li><a href="#">Contact us</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© 2026 StayLocal. All rights reserved.</span>
+      <div class="footer-currency-row">
+        <button class="curr-btn active">IDR</button>
+        <button class="curr-btn">THB</button>
+        <button class="curr-btn">VND</button>
+        <button class="curr-btn">PHP</button>
+        <button class="curr-btn">MYR</button>
+        <button class="curr-btn">USD</button>
+      </div>
+      <span><a href="#" style="color:inherit">Privacy</a> · <a href="#" style="color:inherit">Terms</a></span>
+    </div>
+  </div>
+</footer>
+
+<script>
+// ── MOSAIC TILES ──
+const mosaicImages = [
+  'https://images.unsplash.com/photo-1537996194471-e657df975ab4?w=400&q=70',
+  'https://images.unsplash.com/photo-1545569341-9eb8b30979d9?w=400&q=70',
+  'https://images.unsplash.com/photo-1582268611958-ebfd161ef9cf?w=400&q=70',
+  'https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=400&q=70',
+  'https://images.unsplash.com/photo-1559628233-100c798642d6?w=400&q=70',
+  'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=400&q=70',
+  'https://images.unsplash.com/photo-1528360983277-13d401cdc186?w=400&q=70',
+  'https://images.unsplash.com/photo-1547400795-8e4b56bbf5f6?w=400&q=70',
+  'https://images.unsplash.com/photo-1552465011-b4e21bf6e79a?w=400&q=70',
+  'https://images.unsplash.com/photo-1555400038-63f5ba517a47?w=400&q=70',
+  'https://images.unsplash.com/photo-1570533730006-f3e7e7d0ed29?w=400&q=70',
+  'https://images.unsplash.com/photo-1602002418082-dd4a5f1939db?w=400&q=70',
+  'https://images.unsplash.com/photo-1518509562904-e7ef99cdcc86?w=400&q=70',
+  'https://images.unsplash.com/photo-1596394516093-501ba68a0ba6?w=400&q=70',
+  'https://images.unsplash.com/photo-1571003123894-1f0594d2b5d9?w=400&q=70',
+  'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=400&q=70',
+  'https://images.unsplash.com/photo-1602343168117-bb8ffe3e2e9f?w=400&q=70',
+  'https://images.unsplash.com/photo-1540541338287-41700207dee6?w=400&q=70',
+  'https://images.unsplash.com/photo-1531366936337-7c912a4589a7?w=400&q=70',
+  'https://images.unsplash.com/photo-1580477667995-2b94f01c9516?w=400&q=70',
+  'https://images.unsplash.com/photo-1528360983277-13d401cdc186?w=400&q=70',
+  'https://images.unsplash.com/photo-1548013146-72479768bada?w=400&q=70',
+  'https://images.unsplash.com/photo-1516690561799-46d8f74f9abf?w=400&q=70',
+  'https://images.unsplash.com/photo-1512100356356-de1b84283e18?w=400&q=70',
+];
+
+const mosaic = document.getElementById('mosaic');
+for (let i = 0; i < 24; i++) {
+  const tile = document.createElement('div');
+  tile.className = 'mosaic-tile';
+  tile.style.backgroundImage = `url(${mosaicImages[i % mosaicImages.length]})`;
+  mosaic.appendChild(tile);
+}
+
+// ── LISTING DATA ──
+const listings = [
+  {
+    id: 1,
+    title: 'Villa Tirta Ubud',
+    location: 'Ubud, Bali',
+    type: 'Entire villa · 4 beds · 2 baths',
+    priceIDR: 1850000,
+    rating: 4.96,
+    reviews: 142,
+    badge: 'Guest fav.',
+    badgeClass: 'badge-fav',
+    photo: 'https://images.unsplash.com/photo-1582268611958-ebfd161ef9cf?w=600&q=80',
+  },
+  {
+    id: 2,
+    title: 'Seminyak Beachside Studio',
+    location: 'Seminyak, Bali',
+    type: 'Private room · 1 bed · 1 bath',
+    priceIDR: 480000,
+    rating: 4.88,
+    reviews: 87,
+    badge: 'Verified',
+    badgeClass: 'badge-verified',
+    photo: 'https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=600&q=80',
+  },
+  {
+    id: 3,
+    title: 'Canggu Pool Villa C8',
+    location: 'Canggu, Bali',
+    type: 'Entire villa · 5 beds · 3 baths',
+    priceIDR: 3200000,
+    rating: 4.78,
+    reviews: 161,
+    badge: 'New',
+    badgeClass: 'badge-new',
+    photo: 'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=600&q=80',
+  },
+  {
+    id: 4,
+    title: 'Rice Field View Retreat',
+    location: 'Tegallalang, Bali',
+    type: 'Entire home · 2 beds · 1 bath',
+    priceIDR: 920000,
+    rating: 4.92,
+    reviews: 53,
+    badge: 'Guest fav.',
+    badgeClass: 'badge-fav',
+    photo: 'https://images.unsplash.com/photo-1537996194471-e657df975ab4?w=600&q=80',
+  },
+];
+
+const currencies = {
+  IDR: { symbol: 'Rp', rate: 1, decimals: 0, locale: 'id-ID', flag: '🇮🇩' },
+  THB: { symbol: '฿', rate: 0.0023, decimals: 0, locale: 'th-TH', flag: '🇹🇭' },
+  VND: { symbol: '₫', rate: 3.9, decimals: 0, locale: 'vi-VN', flag: '🇻🇳' },
+  PHP: { symbol: '₱', rate: 0.35, decimals: 0, locale: 'fil-PH', flag: '🇵🇭' },
+  MYR: { symbol: 'RM', rate: 0.000028, decimals: 2, locale: 'ms-MY', flag: '🇲🇾' },
+  USD: { symbol: '$', rate: 0.000063, decimals: 2, locale: 'en-US', flag: '🇺🇸' },
+};
+
+let currentCurrency = 'IDR';
+
+function formatPrice(priceIDR, currency) {
+  const c = currencies[currency];
+  const converted = priceIDR * c.rate;
+  if (currency === 'IDR') {
+    return 'Rp ' + Math.round(converted).toLocaleString('id-ID');
+  }
+  if (currency === 'THB') return '฿ ' + Math.round(converted).toLocaleString();
+  if (currency === 'VND') return '₫ ' + Math.round(converted).toLocaleString('vi-VN');
+  if (currency === 'PHP') return '₱ ' + Math.round(converted).toLocaleString();
+  if (currency === 'MYR') return 'RM ' + converted.toFixed(2);
+  if (currency === 'USD') return '$ ' + converted.toFixed(2);
+  return c.symbol + ' ' + converted.toFixed(c.decimals);
+}
+
+function renderListings() {
+  const grid = document.getElementById('listingsGrid');
+  grid.innerHTML = listings.map(l => `
+    <div class="listing-card reveal" onclick="alert('Booking flow coming soon!')">
+      <div class="card-photo">
+        <img src="${l.photo}" alt="${l.title}" loading="lazy">
+        <span class="card-badge ${l.badgeClass}">${l.badge}</span>
+        <button class="card-wishlist" onclick="event.stopPropagation();this.textContent=this.textContent==='♡'?'♥':'♡'" aria-label="Save">♡</button>
+      </div>
+      <div class="card-body">
+        <div class="card-loc">${l.location}</div>
+        <div class="card-title">${l.title}</div>
+        <div class="card-meta">${l.type}</div>
+        <div class="card-footer">
+          <div class="card-price">
+            <span class="card-price-main" data-idr="${l.priceIDR}">${formatPrice(l.priceIDR, currentCurrency)}</span>
+            <span class="card-price-unit">per night</span>
+          </div>
+          <div class="card-rating">
+            <span class="star">★</span> ${l.rating} <span style="color:var(--ink-lt)">(${l.reviews})</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  `).join('');
+  observeReveal();
+}
+
+// Currency switcher
+const currencyBtn = document.getElementById('currencyBtn');
+const currKeys = Object.keys(currencies);
+let currIdx = 0;
+currencyBtn.addEventListener('click', () => {
+  currIdx = (currIdx + 1) % currKeys.length;
+  currentCurrency = currKeys[currIdx];
+  const c = currencies[currentCurrency];
+  currencyBtn.innerHTML = `<span>${c.flag}</span> ${currentCurrency} <span style="font-size:10px;color:var(--ink-lt)">▾</span>`;
+  document.querySelectorAll('[data-idr]').forEach(el => {
+    el.textContent = formatPrice(parseFloat(el.dataset.idr), currentCurrency);
+  });
+  // Update footer currency buttons
+  document.querySelectorAll('.curr-btn').forEach((btn, i) => {
+    btn.classList.toggle('active', currKeys[i] === currentCurrency);
+  });
+});
+
+// Footer currency buttons
+document.querySelectorAll('.curr-btn').forEach((btn, i) => {
+  btn.addEventListener('click', () => {
+    currentCurrency = currKeys[i];
+    currIdx = i;
+    const c = currencies[currentCurrency];
+    currencyBtn.innerHTML = `<span>${c.flag}</span> ${currentCurrency} <span style="font-size:10px;color:var(--ink-lt)">▾</span>`;
+    document.querySelectorAll('[data-idr]').forEach(el => {
+      el.textContent = formatPrice(parseFloat(el.dataset.idr), currentCurrency);
+    });
+    document.querySelectorAll('.curr-btn').forEach((b, j) => {
+      b.classList.toggle('active', j === i);
+    });
+  });
+});
+
+// Category pills
+document.querySelectorAll('.cat-pill').forEach(pill => {
+  pill.addEventListener('click', () => {
+    document.querySelectorAll('.cat-pill').forEach(p => p.classList.remove('active'));
+    pill.classList.add('active');
+  });
+});
+
+// Language buttons
+document.querySelectorAll('.lang-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+  });
+});
+
+// ── AI DEMO CHAT ──
+const demoResponses = [
+  "Great question! Let me search for that... 🔍 Found 8 matches. The top pick is <strong>Villa Kayu Ubud</strong> — 3 bedrooms, mountain views, chef's kitchen. Rp 1.4 juta/night. ★ 4.97",
+  "Absolutely! GoPay, OVO, Dana, and BCA Virtual Account are all accepted. No credit card needed. 🎉",
+  "The best time to visit Bali is April–June or September–October. July–August is peak season — book early and expect prices 30–40% higher.",
+  "I found 5 family-friendly villas with kids pools near Seminyak, all under Rp 4 juta/night. Want me to filter by number of bedrooms?",
+  "From Ngurah Rai airport to Ubud is about 1.5 hours by car. Grab taxi is ~Rp 150–200k. Your host can also arrange airport pickup — just message them after booking! 🚗",
+];
+let demoIdx = 0;
+
+function sendDemoMessage() {
+  const input = document.getElementById('demoInput');
+  const messages = document.getElementById('demoMessages');
+  const text = input.value.trim();
+  if (!text) return;
+
+  const userMsg = document.createElement('div');
+  userMsg.className = 'msg msg-user';
+  userMsg.textContent = text;
+  messages.appendChild(userMsg);
+
+  input.value = '';
+
+  setTimeout(() => {
+    const aiMsg = document.createElement('div');
+    aiMsg.className = 'msg msg-ai';
+    aiMsg.innerHTML = demoResponses[demoIdx % demoResponses.length];
+    messages.appendChild(aiMsg);
+    demoIdx++;
+    messages.scrollTop = messages.scrollHeight;
+  }, 700);
+
+  messages.scrollTop = messages.scrollHeight;
+}
+
+function handleDemoKey(e) {
+  if (e.key === 'Enter') sendDemoMessage();
+}
+
+function scrollToAI() {
+  document.getElementById('ai').scrollIntoView({ behavior: 'smooth' });
+}
+
+function handleSearch() {
+  document.getElementById('listings').scrollIntoView({ behavior: 'smooth' });
+}
+
+// ── SCROLL REVEAL ──
+function observeReveal() {
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        e.target.classList.add('visible');
+        // Stagger children
+        e.target.querySelectorAll('.listing-card, .why-card, .testimonial-card').forEach((child, i) => {
+          child.style.transitionDelay = `${i * 80}ms`;
+          child.classList.add('visible');
+        });
+      }
+    });
+  }, { threshold: 0.1 });
+
+  document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+}
+
+// Init
+renderListings();
+observeReveal();
+</script>
+</body>
+</html>
