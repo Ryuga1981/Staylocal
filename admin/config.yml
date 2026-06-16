@@ -1,4 +1,4 @@
-backend:
+﻿backend:
   name: github
   repo: Ryuga1981/Staylocal
   branch: main
