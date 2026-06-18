@@ -144,9 +144,8 @@
 </div>
 
 <script src="admin.js"></script>
-<script src="https://maps.googleapis.com/maps/api/js?key=YOUR_GOOGLE_MAPS_API_KEY&callback=initMap" async defer></script>
 <script>
-requireAuth();
+requireAuth().then(loadForEdit);
 
 let editingFile = null;
 let editingSha = null;
@@ -157,6 +156,18 @@ let map, marker, radiusCircle;
 
 const params = new URLSearchParams(window.location.search);
 if (params.get('file')) editingFile = params.get('file');
+
+// Load Google Maps dynamically using the key saved in Settings (if any)
+(function loadGoogleMaps(){
+  const key = localStorage.getItem('sl_maps_key');
+  if (!key) { showMapFallback(); return; }
+  const script = document.createElement('script');
+  script.src = `https://maps.googleapis.com/maps/api/js?key=${key}&libraries=places&callback=initMap`;
+  script.async = true;
+  script.onerror = showMapFallback;
+  document.head.appendChild(script);
+  setTimeout(() => { if (typeof google === 'undefined') showMapFallback(); }, 4000);
+})();
 
 /* ── AMENITIES ── */
 function renderAmenities(selected=[]){
@@ -279,23 +290,21 @@ function setPin(lat, lng){
   document.getElementById('pinCoords').textContent = `${lat.toFixed(5)}, ${lng.toFixed(5)} (1km radius shown to guests)`;
 }
 
-// Fallback if Google Maps key isn't configured yet
-window.addEventListener('load', () => {
-  setTimeout(() => {
-    if (typeof google === 'undefined'){
-      document.getElementById('mapPicker').innerHTML = `
-        <div style="display:flex;align-items:center;justify-content:center;height:100%;background:#f5f5f0;border-radius:var(--r-md);flex-direction:column;gap:8px;padding:20px;text-align:center">
-          <div style="font-size:28px">🗺️</div>
-          <div style="font-size:13px;color:var(--ink-lt)">Add your Google Maps API key in settings to enable the map picker.<br>For now, enter coordinates manually below.</div>
-          <div style="display:flex;gap:8px;margin-top:8px;width:100%;max-width:300px">
-            <input id="manualLat" class="field-input" placeholder="Latitude" style="font-size:12px">
-            <input id="manualLng" class="field-input" placeholder="Longitude" style="font-size:12px">
-          </div>
-          <button class="btn btn-outline btn-sm" onclick="setPin(parseFloat(document.getElementById('manualLat').value),parseFloat(document.getElementById('manualLng').value))">Set Pin</button>
-        </div>`;
-    }
-  }, 2500);
-});
+// Fallback if Google Maps key isn't configured or fails to load
+function showMapFallback(){
+  const el = document.getElementById('mapPicker');
+  if (!el || typeof google !== 'undefined') return;
+  el.innerHTML = `
+    <div style="display:flex;align-items:center;justify-content:center;height:100%;background:#f5f5f0;border-radius:var(--r-md);flex-direction:column;gap:8px;padding:20px;text-align:center">
+      <div style="font-size:28px">🗺️</div>
+      <div style="font-size:13px;color:var(--ink-lt)">Add your Google Maps API key in <a href="settings.html" style="color:var(--teal);font-weight:600">Settings</a> to enable the map picker.<br>For now, enter coordinates manually below.</div>
+      <div style="display:flex;gap:8px;margin-top:8px;width:100%;max-width:300px">
+        <input id="manualLat" class="field-input" placeholder="Latitude" style="font-size:12px">
+        <input id="manualLng" class="field-input" placeholder="Longitude" style="font-size:12px">
+      </div>
+      <button class="btn btn-outline btn-sm" onclick="setPin(parseFloat(document.getElementById('manualLat').value),parseFloat(document.getElementById('manualLng').value))">Set Pin</button>
+    </div>`;
+}
 
 /* ── LOAD EXISTING (edit mode) ── */
 async function loadForEdit(){
@@ -364,8 +373,6 @@ async function submitForm(){
   }
   hideLoading();
 }
-
-loadForEdit();
 </script>
 </body>
 </html>

@@ -71,8 +71,6 @@
 
 <script src="admin.js"></script>
 <script>
-requireAuth();
-
 let allListings = [];
 let current = null;
 let viewYear, viewMonth;
@@ -198,7 +196,7 @@ async function saveAvailability(){
   hideLoading();
 }
 
-init();
+requireAuth().then(init);
 </script>
 </body>
 </html>

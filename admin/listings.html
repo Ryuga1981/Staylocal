@@ -70,7 +70,6 @@
 
 <script src="admin.js"></script>
 <script>
-requireAuth();
 let allListings = [];
 
 async function loadListings(){
@@ -156,7 +155,7 @@ async function deleteIt(filename, sha){
 
 document.getElementById('searchInput').addEventListener('input', renderTable);
 document.getElementById('sortSelect').addEventListener('change', renderTable);
-loadListings();
+requireAuth().then(loadListings);
 </script>
 </body>
 </html>

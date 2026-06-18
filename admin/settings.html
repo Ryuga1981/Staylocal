@@ -75,12 +75,12 @@
 
 <script src="admin.js"></script>
 <script>
-requireAuth();
-
-document.getElementById('s_token').value = getToken();
-document.getElementById('s_mapskey').value = localStorage.getItem('sl_maps_key') || '';
-document.getElementById('s_sitename').value = localStorage.getItem('sl_sitename') || 'StayLocal';
-document.getElementById('s_email').value = localStorage.getItem('sl_email') || '';
+requireAuth().then(() => {
+  document.getElementById('s_token').value = getToken();
+  document.getElementById('s_mapskey').value = localStorage.getItem('sl_maps_key') || '';
+  document.getElementById('s_sitename').value = localStorage.getItem('sl_sitename') || 'StayLocal';
+  document.getElementById('s_email').value = localStorage.getItem('sl_email') || '';
+});
 
 function saveGithubToken(){
   setToken(document.getElementById('s_token').value.trim());

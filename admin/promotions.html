@@ -85,7 +85,6 @@
 
 <script src="admin.js"></script>
 <script>
-requireAuth();
 let allListings = [];
 
 async function init(){
@@ -173,7 +172,7 @@ async function removePromo(filename, idx){
   hideLoading();
 }
 
-init();
+requireAuth().then(init);
 </script>
 </body>
 </html>

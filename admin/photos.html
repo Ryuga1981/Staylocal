@@ -45,8 +45,6 @@
 
 <script src="admin.js"></script>
 <script>
-requireAuth();
-
 async function loadLibrary(){
   showLoading();
   try {
@@ -70,7 +68,7 @@ async function loadLibrary(){
   }
   hideLoading();
 }
-loadLibrary();
+requireAuth().then(loadLibrary);
 </script>
 </body>
 </html>

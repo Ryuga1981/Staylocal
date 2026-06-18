@@ -17,17 +17,24 @@ function getToken(){ return localStorage.getItem('sl_github_token') || ''; }
 function setToken(t){ localStorage.setItem('sl_github_token', t); }
 
 /* ── AUTH GUARD ── */
+// Returns a Promise that resolves once the user is logged in AND a token exists.
 function requireAuth(){
-  if (!window.netlifyIdentity) return;
-  netlifyIdentity.on('init', user => {
-    if (!user) {
-      window.location.href = 'index.html';
-    } else {
+  return new Promise((resolve) => {
+    if (!window.netlifyIdentity) { resolve(); return; }
+    netlifyIdentity.on('init', user => {
+      if (!user) {
+        window.location.href = 'index.html';
+        return; // never resolves — page is navigating away
+      }
       renderUserBadge(user);
-      if (!getToken()) showTokenSetup();
-    }
+      if (getToken()) {
+        resolve();
+      } else {
+        showTokenSetup(() => resolve());
+      }
+    });
+    netlifyIdentity.init();
   });
-  netlifyIdentity.init();
 }
 
 function renderUserBadge(user){
@@ -44,20 +51,49 @@ function doLogout(){
 }
 
 /* ── TOKEN SETUP MODAL ── */
-function showTokenSetup(){
+function showTokenSetup(onSaved){
   const wrap = document.createElement('div');
   wrap.style = 'position:fixed;inset:0;background:rgba(18,17,15,0.5);display:flex;align-items:center;justify-content:center;z-index:2000';
   wrap.innerHTML = `
     <div class="card" style="max-width:440px;width:90%">
       <h3 style="font-family:'Fraunces',serif;font-size:20px;margin-bottom:8px">One-time setup</h3>
       <p style="font-size:13px;color:var(--ink-lt);margin-bottom:16px">Paste a GitHub Personal Access Token (repo scope) so the dashboard can save listings directly to your repo.</p>
-      <input type="password" id="tokenInput" class="field-input" placeholder="github_pat_..." style="margin-bottom:12px">
+      <input type="password" id="tokenInput" class="field-input" placeholder="ghp_... or github_pat_..." style="margin-bottom:8px">
+      <div id="tokenError" style="color:var(--red, #EF4444);font-size:12px;margin-bottom:8px;display:none"></div>
       <button class="btn btn-primary" style="width:100%;justify-content:center" id="tokenSaveBtn">Save & Continue</button>
     </div>`;
   document.body.appendChild(wrap);
-  document.getElementById('tokenSaveBtn').onclick = () => {
-    const val = document.getElementById('tokenInput').value.trim();
-    if (val) { setToken(val); wrap.remove(); toast('Token saved', 'success'); }
+
+  const input = document.getElementById('tokenInput');
+  const errBox = document.getElementById('tokenError');
+  const btn = document.getElementById('tokenSaveBtn');
+
+  btn.onclick = async () => {
+    const val = input.value.trim();
+    if (!val) return;
+    btn.disabled = true;
+    btn.textContent = 'Checking…';
+    errBox.style.display = 'none';
+
+    // Verify the token actually works before saving/closing
+    try {
+      const res = await fetch(`https://api.github.com/repos/${GITHUB_REPO}`, {
+        headers: { Authorization: `Bearer ${val}` }
+      });
+      if (!res.ok) {
+        const body = await res.json().catch(()=>({}));
+        throw new Error(body.message || `GitHub returned ${res.status}`);
+      }
+      setToken(val);
+      wrap.remove();
+      toast('Token saved', 'success');
+      if (onSaved) onSaved();
+    } catch(e){
+      errBox.textContent = '❌ ' + e.message + ' — check the token has "repo" scope and was copied in full.';
+      errBox.style.display = 'block';
+      btn.disabled = false;
+      btn.textContent = 'Save & Continue';
+    }
   };
 }
 

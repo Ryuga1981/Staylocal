@@ -89,7 +89,7 @@
 
 <script src="admin.js"></script>
 <script>
-requireAuth();
+// auth handled below, chained with loadDashboard
 
 async function loadDashboard(){
   showLoading();
@@ -158,7 +158,7 @@ async function loadDashboard(){
   }
   hideLoading();
 }
-loadDashboard();
+requireAuth().then(loadDashboard);
 </script>
 </body>
 </html>
