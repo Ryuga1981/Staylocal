@@ -1561,38 +1561,66 @@ document.querySelectorAll('.lang-btn').forEach(btn => {
 });
 
 // ── AI DEMO CHAT ──
-const demoResponses = [
-  "Great question! Let me search for that... 🔍 Found 8 matches. The top pick is <strong>Villa Kayu Ubud</strong> — 3 bedrooms, mountain views, chef's kitchen. Rp 1.4 juta/night. ★ 4.97",
-  "Absolutely! GoPay, OVO, Dana, and BCA Virtual Account are all accepted. No credit card needed. 🎉",
-  "The best time to visit Bali is April–June or September–October. July–August is peak season — book early and expect prices 30–40% higher.",
-  "I found 5 family-friendly villas with kids pools near Seminyak, all under Rp 4 juta/night. Want me to filter by number of bedrooms?",
-  "From Ngurah Rai airport to Ubud is about 1.5 hours by car. Grab taxi is ~Rp 150–200k. Your host can also arrange airport pickup — just message them after booking! 🚗",
-];
-let demoIdx = 0;
+// ── REAL AI CHAT (Claude API via Netlify Function) ──
+const chatHistory = []; // {role, content}
 
-function sendDemoMessage() {
+// Seed the conversation with the initial demo messages already visible
+chatHistory.push({ role: 'user', content: 'villa dengan kolam renang untuk 6 orang di Ubud, budget 2 juta per malam' });
+chatHistory.push({ role: 'assistant', content: 'Found 12 villas in Ubud with pools for 6 guests under Rp 2.000.000/night 🌿\n\nTop pick: Villa Tirta Ubud — private infinity pool, rice field views, 4 bedrooms. Rp 1.850.000/night · ★ 4.96' });
+chatHistory.push({ role: 'user', content: 'What should we do near this villa?' });
+chatHistory.push({ role: 'assistant', content: 'Ubud is magical! Within 10 min of the villa:\n🍳 Cooking class at Paon Bali (Rp 350k/person)\n🌅 Campuhan Ridge Walk — sunrise hike, free\n🎭 Kecak fire dance at Uluwatu, Rp 150k\n🛵 Scooter rental ~Rp 80k/day to explore on your own' });
+
+async function sendDemoMessage() {
   const input = document.getElementById('demoInput');
-  const messages = document.getElementById('demoMessages');
+  const messagesEl = document.getElementById('demoMessages');
   const text = input.value.trim();
   if (!text) return;
 
+  // Add user message to UI
   const userMsg = document.createElement('div');
   userMsg.className = 'msg msg-user';
   userMsg.textContent = text;
-  messages.appendChild(userMsg);
-
+  messagesEl.appendChild(userMsg);
   input.value = '';
+  messagesEl.scrollTop = messagesEl.scrollHeight;
 
-  setTimeout(() => {
-    const aiMsg = document.createElement('div');
-    aiMsg.className = 'msg msg-ai';
-    aiMsg.innerHTML = demoResponses[demoIdx % demoResponses.length];
-    messages.appendChild(aiMsg);
-    demoIdx++;
-    messages.scrollTop = messages.scrollHeight;
-  }, 700);
+  // Add to history
+  chatHistory.push({ role: 'user', content: text });
 
-  messages.scrollTop = messages.scrollHeight;
+  // Show typing indicator
+  const typingEl = document.createElement('div');
+  typingEl.className = 'msg msg-ai';
+  typingEl.innerHTML = '<span style="color:var(--ink-lt)">✦ thinking…</span>';
+  messagesEl.appendChild(typingEl);
+  messagesEl.scrollTop = messagesEl.scrollHeight;
+
+  try {
+    const res = await fetch('/.netlify/functions/ai-chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        messages: chatHistory,
+        listingContext: null, // Could pass current listing data here
+      }),
+    });
+
+    const data = await res.json();
+
+    if (data.error) throw new Error(data.error);
+
+    const reply = data.reply;
+    chatHistory.push({ role: 'assistant', content: reply });
+
+    // Replace typing indicator with real response
+    typingEl.innerHTML = reply.replace(/\n/g, '<br>');
+
+  } catch(e) {
+    typingEl.innerHTML = `<span style="color:var(--red,#ef4444)">Sorry, couldn't connect to AI right now. Try again!</span>`;
+    // Remove failed message from history
+    chatHistory.pop();
+  }
+
+  messagesEl.scrollTop = messagesEl.scrollHeight;
 }
 
 function handleDemoKey(e) {
