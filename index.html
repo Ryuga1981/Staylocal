@@ -1003,60 +1003,57 @@
 <section class="ai-section" id="ai">
   <div class="ai-inner">
     <div>
-      <div class="ai-label">✦ Powered by Claude AI</div>
-      <h2 class="ai-h2">Search like you<br><em>think</em>, not like<br>a search engine</h2>
-      <p class="ai-body">Type what you're looking for in plain language — in English, Bahasa Indonesia, or Thai. Our AI understands what you mean and finds exactly what you need.</p>
+      <div class="ai-label">✦ Smart Listing Finder</div>
+      <h2 class="ai-h2">Find the perfect<br><em>stay</em>, just by<br>describing it</h2>
+      <p class="ai-body">Tell us what you're looking for in plain language. Our smart search scans all listings and recommends the best matches by rating, location, features and availability.</p>
       <div class="ai-features-list">
         <div class="ai-feature-item">
-          <div class="ai-feature-icon">🔍</div>
+          <div class="ai-feature-icon">📍</div>
           <div class="ai-feature-text">
-            <strong>Natural language search</strong>
-            <span>"Romantic villa near rice fields under Rp 3 juta"</span>
+            <strong>Location aware</strong>
+            <span>"villa di Bandung" or "place near Ubud rice fields"</span>
           </div>
         </div>
         <div class="ai-feature-item">
-          <div class="ai-feature-icon">✍️</div>
+          <div class="ai-feature-icon">🏊</div>
           <div class="ai-feature-text">
-            <strong>AI listing writer</strong>
-            <span>Upload photos → get a perfect listing in EN + ID in seconds</span>
+            <strong>Feature matching</strong>
+            <span>"with pool", "4 bedrooms", "for 8 guests", "pet friendly"</span>
           </div>
         </div>
         <div class="ai-feature-item">
           <div class="ai-feature-icon">💰</div>
           <div class="ai-feature-text">
-            <strong>Smart price advisor</strong>
-            <span>AI sets your price based on season, events, and local demand</span>
+            <strong>Budget filtering</strong>
+            <span>"under Rp 2 juta", "cheapest available", "best value"</span>
           </div>
         </div>
         <div class="ai-feature-item">
-          <div class="ai-feature-icon">🗺️</div>
+          <div class="ai-feature-icon">⭐</div>
           <div class="ai-feature-text">
-            <strong>Local trip planner</strong>
-            <span>Chat with an AI guide who actually knows your neighborhood</span>
+            <strong>Ranked by rating</strong>
+            <span>Always shows highest-rated matches first</span>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- Chat demo -->
+    <!-- Smart listing finder chat -->
     <div class="ai-demo">
       <div class="demo-header">
-        <div class="demo-avatar">✦</div>
+        <div class="demo-avatar">🔍</div>
         <div>
-          <div class="demo-name">StayLocal AI</div>
-          <div class="demo-status">Local guide · Trip planner</div>
+          <div class="demo-name">StayLocal Finder</div>
+          <div class="demo-status">Smart listing search</div>
         </div>
         <div class="demo-online"></div>
       </div>
       <div class="demo-messages" id="demoMessages">
-        <div class="msg msg-user">Villa dengan kolam renang untuk 6 orang di Ubud, budget 2 juta per malam</div>
-        <div class="msg msg-ai">Found <strong>12 villas</strong> in Ubud with pools for 6 guests under <strong>Rp 2.000.000/night</strong> 🌿<br><br>Top pick: <strong>Villa Tirta Ubud</strong> — private infinity pool, rice field views, 4 bedrooms. <strong>Rp 1.850.000/night</strong> · ★ 4.96</div>
-        <div class="msg msg-user">What should we do near this villa?</div>
-        <div class="msg msg-ai">Ubud is magical! Within 10 min of the villa:<br>🍳 <strong>Cooking class</strong> at Paon Bali (Rp 350k/person)<br>🌅 <strong>Campuhan Ridge Walk</strong> — sunrise hike, free<br>🎭 <strong>Kecak fire dance</strong> at Uluwatu, Rp 150k<br>🛵 Scooter rental ~Rp 80k/day to explore on your own</div>
+        <div class="msg msg-ai">👋 Hi! Tell me what you're looking for — location, dates, number of guests, features like pool or AC. I'll find the best listings for you!</div>
       </div>
       <div class="demo-input">
-        <input type="text" placeholder="Ask anything about your trip…" id="demoInput" onkeydown="handleDemoKey(event)">
-        <button onclick="sendDemoMessage()">Send</button>
+        <input type="text" placeholder="e.g. villa di Bandung untuk 6 orang dengan kolam..." id="demoInput" onkeydown="handleDemoKey(event)">
+        <button onclick="sendDemoMessage()">Search</button>
       </div>
     </div>
   </div>
@@ -1561,22 +1558,128 @@ document.querySelectorAll('.lang-btn').forEach(btn => {
 });
 
 // ── AI DEMO CHAT ──
-// ── REAL AI CHAT (Claude API via Netlify Function) ──
-const chatHistory = []; // {role, content}
+// ── SMART LISTING FINDER (no AI API needed) ──
+function parseQuery(text) {
+  const q = text.toLowerCase();
+  const result = { location: null, maxPrice: null, minGuests: null, features: [], dates: { checkin: null, checkout: null } };
 
-// Seed the conversation with the initial demo messages already visible
-chatHistory.push({ role: 'user', content: 'villa dengan kolam renang untuk 6 orang di Ubud, budget 2 juta per malam' });
-chatHistory.push({ role: 'assistant', content: 'Found 12 villas in Ubud with pools for 6 guests under Rp 2.000.000/night 🌿\n\nTop pick: Villa Tirta Ubud — private infinity pool, rice field views, 4 bedrooms. Rp 1.850.000/night · ★ 4.96' });
-chatHistory.push({ role: 'user', content: 'What should we do near this villa?' });
-chatHistory.push({ role: 'assistant', content: 'Ubud is magical! Within 10 min of the villa:\n🍳 Cooking class at Paon Bali (Rp 350k/person)\n🌅 Campuhan Ridge Walk — sunrise hike, free\n🎭 Kecak fire dance at Uluwatu, Rp 150k\n🛵 Scooter rental ~Rp 80k/day to explore on your own' });
+  // Extract location — common SEA cities/areas
+  const locations = ['bali','bandung','ubud','seminyak','canggu','jakarta','yogyakarta','lombok','bangkok','phuket','chiangmai','hanoi','danang','manila','singapore','kualalumpur'];
+  for (const loc of locations) {
+    if (q.includes(loc)) { result.location = loc; break; }
+  }
 
-async function sendDemoMessage() {
+  // Extract price — handles "2 juta", "2000000", "2 million", "under 2jt"
+  const priceMatch = q.match(/(\d+(?:[.,]\d+)?)\s*(?:juta|jt|million|ribu|rb|k)/);
+  if (priceMatch) {
+    let num = parseFloat(priceMatch[1].replace(',','.'));
+    if (q.includes('juta') || q.includes('jt') || q.includes('million')) num *= 1000000;
+    else if (q.includes('ribu') || q.includes('rb') || q.includes('k')) num *= 1000;
+    result.maxPrice = num;
+  }
+  // Plain number like "1500000"
+  const plainNum = q.match(/\b(\d{5,})\b/);
+  if (!result.maxPrice && plainNum) result.maxPrice = parseInt(plainNum[1]);
+
+  // Extract guest count
+  const guestMatch = q.match(/(\d+)\s*(?:orang|tamu|guest|pax|person|people)/);
+  if (guestMatch) result.minGuests = parseInt(guestMatch[1]);
+
+  // Extract features
+  const featureMap = {
+    'pool': ['kolam','pool','renang','swimming'],
+    'WiFi': ['wifi','internet'],
+    'Kitchen': ['kitchen','dapur','masak'],
+    'Air Conditioning': ['ac','air conditioning','dingin'],
+    'Free Parking': ['parking','parkir'],
+    'BBQ Area': ['bbq','barbeque','bakar'],
+    'TV': ['tv','television'],
+    'Gym': ['gym','fitness'],
+    'Sea View': ['sea view','ocean view','laut','pantai','beach'],
+    'Garden': ['garden','taman'],
+    'Pet Friendly': ['pet','anjing','kucing','dog','cat'],
+  };
+  for (const [feature, keywords] of Object.entries(featureMap)) {
+    if (keywords.some(k => q.includes(k))) result.features.push(feature);
+  }
+
+  // Extract dates
+  const months = { jan:1,feb:2,mar:3,apr:4,may:5,jun:6,jul:7,aug:8,sep:9,oct:10,nov:11,dec:12 };
+  const dateMatch = q.match(/(\d{1,2})\s*(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)/gi);
+  if (dateMatch && dateMatch.length >= 1) {
+    const parts = dateMatch[0].match(/(\d+)\s*(\w+)/i);
+    const month = months[parts[2].toLowerCase().slice(0,3)];
+    const year = new Date().getFullYear();
+    result.dates.checkin = `${year}-${String(month).padStart(2,'0')}-${String(parts[1]).padStart(2,'0')}`;
+    if (dateMatch[1]) {
+      const parts2 = dateMatch[1].match(/(\d+)\s*(\w+)/i);
+      const month2 = months[parts2[2].toLowerCase().slice(0,3)];
+      result.dates.checkout = `${year}-${String(month2).padStart(2,'0')}-${String(parts2[1]).padStart(2,'0')}`;
+    }
+  }
+
+  return result;
+}
+
+function scoreListing(listing, query) {
+  let score = 0;
+
+  // Location match
+  if (query.location) {
+    const loc = String(listing.location || '').toLowerCase();
+    const title = String(listing.title || '').toLowerCase();
+    const region = String(listing.region || '').toLowerCase();
+    if (loc.includes(query.location) || title.includes(query.location) || region.includes(query.location)) score += 50;
+    else return -1; // No location match = exclude
+  }
+
+  // Price match
+  if (query.maxPrice && listing.price > query.maxPrice) return -1; // Over budget = exclude
+
+  // Guest capacity
+  if (query.minGuests && (Number(listing.guests) || 0) < query.minGuests) return -1;
+
+  // Feature matching
+  const amenities = listing.amenities || [];
+  for (const feature of query.features) {
+    if (amenities.some(a => String(a).toLowerCase().includes(feature.toLowerCase()))) score += 15;
+  }
+
+  // Availability check
+  if (query.dates.checkin) {
+    const blocked = (listing.blockedDates || []).concat(listing.bookedDates || []);
+    let d = new Date(query.dates.checkin);
+    const end = query.dates.checkout ? new Date(query.dates.checkout) : new Date(d.getTime() + 86400000);
+    while (d < end) {
+      if (blocked.includes(d.toISOString().slice(0, 10))) return -1;
+      d.setDate(d.getDate() + 1);
+    }
+    score += 10;
+  }
+
+  // Rating boost
+  score += (Number(listing.rating) || 0) * 8;
+
+  // Available boost
+  if (listing.available !== false) score += 5;
+
+  return score;
+}
+
+function photoUrl_chat(path) {
+  const NETLIFY = 'https://staylocalzahra.netlify.app';
+  if (!path) return 'https://images.unsplash.com/photo-1582268611958-ebfd161ef9cf?w=300&q=70';
+  if (path.startsWith('/images/')) return NETLIFY + path;
+  return path;
+}
+
+function sendDemoMessage() {
   const input = document.getElementById('demoInput');
   const messagesEl = document.getElementById('demoMessages');
   const text = input.value.trim();
   if (!text) return;
 
-  // Add user message to UI
+  // Add user message
   const userMsg = document.createElement('div');
   userMsg.className = 'msg msg-user';
   userMsg.textContent = text;
@@ -1584,43 +1687,75 @@ async function sendDemoMessage() {
   input.value = '';
   messagesEl.scrollTop = messagesEl.scrollHeight;
 
-  // Add to history
-  chatHistory.push({ role: 'user', content: text });
+  // Parse query
+  const query = parseQuery(text);
 
-  // Show typing indicator
-  const typingEl = document.createElement('div');
-  typingEl.className = 'msg msg-ai';
-  typingEl.innerHTML = '<span style="color:var(--ink-lt)">✦ thinking…</span>';
-  messagesEl.appendChild(typingEl);
-  messagesEl.scrollTop = messagesEl.scrollHeight;
+  // Wait for listings to load if needed
+  setTimeout(() => {
+    if (!listings || !listings.length) {
+      const noListings = document.createElement('div');
+      noListings.className = 'msg msg-ai';
+      noListings.textContent = 'No listings loaded yet. Try again in a moment!';
+      messagesEl.appendChild(noListings);
+      return;
+    }
 
-  try {
-    const res = await fetch('/.netlify/functions/ai-chat', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        messages: chatHistory,
-        listingContext: null, // Could pass current listing data here
-      }),
-    });
+    // Score and sort listings
+    const scored = listings
+      .map(l => ({ listing: l, score: scoreListing(l, query) }))
+      .filter(x => x.score >= 0)
+      .sort((a, b) => b.score - a.score);
 
-    const data = await res.json();
+    const aiMsg = document.createElement('div');
+    aiMsg.className = 'msg msg-ai';
 
-    if (data.error) throw new Error(data.error);
+    if (!scored.length) {
+      let suggestions = 'Try removing some filters or searching a different location.';
+      if (query.location) suggestions = `No listings found in ${query.location}. Try nearby areas.`;
+      aiMsg.innerHTML = `😔 No matches found. ${suggestions}`;
+    } else {
+      const top = scored.slice(0, 3);
+      let html = `✅ Found <strong>${scored.length} listing${scored.length > 1 ? 's' : ''}</strong>`;
+      if (query.location) html += ` in <strong>${query.location}</strong>`;
+      if (query.maxPrice) html += ` under <strong>${formatPrice(query.maxPrice, currentCurrency)}</strong>`;
+      html += `:<br><br>`;
 
-    const reply = data.reply;
-    chatHistory.push({ role: 'assistant', content: reply });
+      top.forEach((x, i) => {
+        const l = x.listing;
+        const photo = (l.photos && l.photos[0]) ? l.photos[0].url : null;
+        const price = formatPrice(Number(l.price) || 0, currentCurrency);
+        html += `
+          <div onclick="window.location.href='listing.html?file=${l._filename}'"
+            style="display:flex;gap:10px;padding:10px;background:rgba(255,255,255,0.12);border-radius:10px;margin-bottom:8px;cursor:pointer;transition:background 0.2s"
+            onmouseover="this.style.background='rgba(255,255,255,0.2)'"
+            onmouseout="this.style.background='rgba(255,255,255,0.12)'">
+            <img src="${photoUrl_chat(photo)}" style="width:60px;height:48px;border-radius:6px;object-fit:cover;flex-shrink:0">
+            <div>
+              <div style="font-weight:600;font-size:13px">${i+1}. ${l.title}</div>
+              <div style="font-size:12px;opacity:0.8">${l.location || ''} · ${l.bedrooms || '?'} beds · ${l.guests || '?'} guests</div>
+              <div style="font-size:13px;margin-top:3px"><strong>${price}</strong>/night · ★ ${l.rating || 'New'}</div>
+            </div>
+          </div>`;
+      });
 
-    // Replace typing indicator with real response
-    typingEl.innerHTML = reply.replace(/\n/g, '<br>');
+      if (scored.length > 3) {
+        html += `<div style="font-size:12px;opacity:0.75;margin-top:4px">+ ${scored.length - 3} more results — use the search bar above to see all</div>`;
+      }
 
-  } catch(e) {
-    typingEl.innerHTML = `<span style="color:var(--red,#ef4444)">Sorry, couldn't connect to AI right now. Try again!</span>`;
-    // Remove failed message from history
-    chatHistory.pop();
-  }
+      // Also update main search
+      setTimeout(() => {
+        if (query.location) document.getElementById('searchWhere').value = query.location;
+        if (query.dates.checkin) document.getElementById('searchCheckin').value = query.dates.checkin;
+        if (query.dates.checkout) document.getElementById('searchCheckout').value = query.dates.checkout;
+        if (query.minGuests) document.getElementById('searchGuests').value = query.minGuests;
+      }, 100);
 
-  messagesEl.scrollTop = messagesEl.scrollHeight;
+      aiMsg.innerHTML = html;
+    }
+
+    messagesEl.appendChild(aiMsg);
+    messagesEl.scrollTop = messagesEl.scrollHeight;
+  }, 300);
 }
 
 function handleDemoKey(e) {
