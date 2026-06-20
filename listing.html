@@ -422,11 +422,38 @@ function updateSummary(){
 function bookNow(){
   const checkin = document.getElementById('checkinInput').value;
   const checkout = document.getElementById('checkoutInput').value;
-  if (!checkin || !checkout) return alert('Please select check-in and check-out dates.');
-  alert('Booking flow coming soon! Dates: ' + checkin + ' → ' + checkout);
+  if (!checkin || !checkout) return alert('Please select your check-in and check-out dates.');
+  if (checkout <= checkin) return alert('Check-out must be after check-in.');
+
+  // Check dates not blocked
+  const cIn = checkin, cOut = checkout;
+  const blocked = (listing.blockedDates||[]).concat(listing.bookedDates||[]);
+  let d = new Date(cIn);
+  while (d < new Date(cOut)) {
+    const key = d.toISOString().slice(0,10);
+    if (blocked.includes(key)) return alert('Sorry, some of your selected dates are not available. Please choose different dates.');
+    d.setDate(d.getDate()+1);
+  }
+
+  const params = new URLSearchParams({
+    file: new URLSearchParams(window.location.search).get('file'),
+    checkin, checkout,
+    guests: guestCount,
+  });
+  window.location.href = 'booking.html?' + params.toString();
 }
 
 loadListing();
+</script>
+<script src="guest-auth.js"></script>
+<script>
+// Add guest nav to listing page
+document.querySelector('nav').insertAdjacentHTML('beforeend', '<div id="guestNav"></div>');
+// Add CSS for auth buttons
+const s = document.createElement('style');
+s.textContent = `.btn-auth-signup{padding:8px 18px;background:var(--teal);color:#fff;border:none;border-radius:var(--r-pill,100px);font-size:14px;font-weight:500;cursor:pointer}`;
+document.head.appendChild(s);
+renderGuestNav();
 </script>
 </body>
 </html>

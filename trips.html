@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>My Trips — StayLocal</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,600;1,9..144,300&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+  :root{--teal:#0D5C63;--coral:#E8472A;--cream:#FAFAF5;--ink:#12110F;--ink-lt:#8A8784;--white:#fff;--border:rgba(18,17,15,0.10);--green:#22C55E;}
+  body{font-family:'Inter',sans-serif;background:var(--cream);color:var(--ink);-webkit-font-smoothing:antialiased}
+  nav{position:sticky;top:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:0 40px;height:68px;background:rgba(250,250,245,0.95);backdrop-filter:blur(12px);border-bottom:1px solid var(--border)}
+  .nav-logo{font-family:'Fraunces',serif;font-size:22px;font-weight:700;color:var(--teal);text-decoration:none}
+  .nav-logo span{color:var(--coral)}
+  .wrap{max-width:800px;margin:0 auto;padding:48px 20px 80px}
+  h1{font-family:'Fraunces',serif;font-size:32px;font-weight:400;margin-bottom:28px}
+  .trip-card{background:var(--white);border-radius:18px;overflow:hidden;box-shadow:0 2px 16px rgba(18,17,15,0.08);margin-bottom:20px;display:flex}
+  .trip-photo{width:160px;flex-shrink:0}
+  .trip-photo img{width:100%;height:100%;object-fit:cover;display:block}
+  .trip-body{padding:20px 24px;flex:1}
+  .trip-status{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:600;padding:4px 10px;border-radius:100px;margin-bottom:10px}
+  .status-paid{background:rgba(34,197,94,0.12);color:#15803d}
+  .status-pending{background:rgba(245,158,11,0.12);color:#92400e}
+  .status-upcoming{background:rgba(13,92,99,0.1);color:var(--teal)}
+  .trip-title{font-family:'Fraunces',serif;font-size:18px;font-weight:500;margin-bottom:4px}
+  .trip-loc{font-size:13px;color:var(--ink-lt);margin-bottom:10px}
+  .trip-dates{font-size:13px;color:var(--ink-lt)}
+  .trip-price{font-size:16px;font-weight:600;color:var(--teal);margin-top:8px}
+  .cashback-tag{font-size:12px;color:var(--teal);background:rgba(13,92,99,0.08);padding:4px 10px;border-radius:100px;display:inline-block;margin-top:6px}
+  .empty{text-align:center;padding:80px 20px;color:var(--ink-lt)}
+  .empty-icon{font-size:48px;margin-bottom:12px}
+  .btn{display:inline-flex;align-items:center;padding:12px 24px;border-radius:100px;font-size:14px;font-weight:600;border:none;cursor:pointer;text-decoration:none;margin-top:16px}
+  .btn-primary{background:var(--teal);color:#fff}
+  @media(max-width:600px){
+    .trip-card{flex-direction:column}
+    .trip-photo{width:100%;height:180px}
+    nav{padding:0 16px}
+    .wrap{padding:32px 16px 60px}
+  }
+</style>
+</head>
+<body>
+<nav>
+  <a href="index.html" class="nav-logo">Stay<span>Local</span></a>
+  <div id="guestNav"></div>
+</nav>
+
+<div class="wrap">
+  <h1>My Trips</h1>
+  <div id="tripsList"></div>
+</div>
+
+<script src="guest-auth.js"></script>
+<script>
+const NETLIFY_SITE = 'https://staylocalzahra.netlify.app';
+
+function photoUrl(path) {
+  if (!path) return 'https://images.unsplash.com/photo-1582268611958-ebfd161ef9cf?w=400&q=70';
+  if (path.startsWith('/images/')) return NETLIFY_SITE + path;
+  return path;
+}
+
+function render() {
+  renderGuestNav();
+  if (!isLoggedIn()) {
+    requireGuestLogin().then(render);
+    return;
+  }
+  const bookings = getBookings();
+  const list = document.getElementById('tripsList');
+  if (!bookings.length) {
+    list.innerHTML = `
+      <div class="empty">
+        <div class="empty-icon">🧳</div>
+        <div style="font-size:16px;font-weight:500;margin-bottom:6px">No trips yet</div>
+        <div style="font-size:14px">Time to plan your next adventure in Southeast Asia!</div>
+        <a href="index.html" class="btn btn-primary" style="margin-top:20px">Start exploring</a>
+      </div>`;
+    return;
+  }
+  const today = new Date().toISOString().slice(0,10);
+  list.innerHTML = bookings.map(b => {
+    let statusClass = 'status-paid', statusLabel = '✓ Paid';
+    if (b.paymentStatus === 'pending') { statusClass = 'status-pending'; statusLabel = '⏳ Pending payment'; }
+    else if (b.checkin > today) { statusClass = 'status-upcoming'; statusLabel = '📅 Upcoming'; }
+    return `
+      <div class="trip-card">
+        <div class="trip-photo"><img src="${photoUrl(b.listingPhoto)}" onerror="this.src='https://images.unsplash.com/photo-1582268611958-ebfd161ef9cf?w=300&q=70'"></div>
+        <div class="trip-body">
+          <span class="trip-status ${statusClass}">${statusLabel}</span>
+          <div class="trip-title">${b.listingTitle}</div>
+          <div class="trip-loc">📍 ${b.listingLocation || ''}</div>
+          <div class="trip-dates">${formatDate(b.checkin)} → ${formatDate(b.checkout)} · ${b.nights} night${b.nights>1?'s':''} · ${b.guests} guest${b.guests>1?'s':''}</div>
+          <div class="trip-price">${formatIDR(b.totalPrice)}</div>
+          ${b.cashbackAmt > 0 ? `<div class="cashback-tag">💰 ${formatIDR(b.cashbackAmt)} cashback pending</div>` : ''}
+        </div>
+      </div>`;
+  }).join('');
+}
+render();
+</script>
+</body>
+</html>

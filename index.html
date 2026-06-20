@@ -894,7 +894,8 @@
       <span>🇮🇩</span> IDR
       <span style="font-size:10px; color:var(--ink-lt)">▾</span>
     </button>
-    <button class="btn-host">List your space</button>
+    <div id="guestNav"></div>
+    <button class="btn-host" onclick="window.location.href='admin/index.html'">List your space</button>
   </div>
 </nav>
 
@@ -1616,6 +1617,14 @@ function observeReveal() {
 // Init
 fetchListings();
 observeReveal();
+</script>
+<script src="guest-auth.js"></script>
+<script>
+// Auth nav + styles for index page
+const _as = document.createElement('style');
+_as.textContent = `.btn-auth-signup{padding:8px 18px;background:var(--teal);color:#fff;border:none;border-radius:var(--r-pill);font-size:14px;font-weight:500;cursor:pointer}`;
+document.head.appendChild(_as);
+renderGuestNav();
 </script>
 </body>
 </html>

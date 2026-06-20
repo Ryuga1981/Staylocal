@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Book Your Stay — StayLocal</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,600;1,9..144,300;1,9..144,400&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://app.sandbox.midtrans.com/snap/snap.js" data-client-key="YOUR_MIDTRANS_CLIENT_KEY"></script>
+<style>
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+  :root{
+    --teal:#0D5C63;--coral:#E8472A;--coral-dk:#C33820;--sand:#F5E6C8;
+    --cream:#FAFAF5;--ink:#12110F;--ink-mid:#4A4844;--ink-lt:#8A8784;
+    --white:#fff;--border:rgba(18,17,15,0.10);--green:#22C55E;--red:#EF4444;
+    --r-sm:8px;--r-md:14px;--r-lg:22px;--r-pill:100px;
+  }
+  body{font-family:'Inter',sans-serif;background:var(--cream);color:var(--ink);-webkit-font-smoothing:antialiased}
+  nav{position:sticky;top:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:0 40px;height:68px;background:rgba(250,250,245,0.95);backdrop-filter:blur(12px);border-bottom:1px solid var(--border)}
+  .nav-logo{font-family:'Fraunces',serif;font-size:22px;font-weight:700;color:var(--teal);text-decoration:none}
+  .nav-logo span{color:var(--coral)}
+  .wrap{max-width:900px;margin:0 auto;padding:40px 20px 80px}
+  h1{font-family:'Fraunces',serif;font-size:28px;font-weight:400;margin-bottom:28px}
+  .layout{display:grid;grid-template-columns:1.3fr 1fr;gap:32px;align-items:start}
+  .card{background:var(--white);border-radius:var(--r-lg);padding:24px;box-shadow:0 2px 16px rgba(18,17,15,0.08);margin-bottom:20px}
+  .card h3{font-family:'Fraunces',serif;font-size:18px;font-weight:500;margin-bottom:18px}
+  .field{margin-bottom:16px}
+  .field label{display:block;font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:5px;color:var(--ink)}
+  .field input,.field select{width:100%;padding:11px 14px;border:1.5px solid var(--border);border-radius:var(--r-sm);font-size:14px;font-family:inherit;outline:none;background:var(--white)}
+  .field input:focus,.field select:focus{border-color:var(--teal)}
+  .field-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+
+  .payment-options{display:flex;flex-direction:column;gap:10px}
+  .pay-option{display:flex;align-items:center;gap:14px;padding:14px 16px;border:1.5px solid var(--border);border-radius:var(--r-md);cursor:pointer;transition:all 0.2s}
+  .pay-option:hover,.pay-option.selected{border-color:var(--teal);background:rgba(13,92,99,0.04)}
+  .pay-option input{display:none}
+  .pay-logo{width:40px;height:28px;object-fit:contain}
+  .pay-name{font-size:14px;font-weight:500}
+  .pay-desc{font-size:12px;color:var(--ink-lt)}
+  .pay-radio{width:18px;height:18px;border-radius:50%;border:2px solid var(--border);margin-left:auto;flex-shrink:0;transition:all 0.2s;display:flex;align-items:center;justify-content:center}
+  .pay-option.selected .pay-radio{border-color:var(--teal);background:var(--teal)}
+  .pay-option.selected .pay-radio::after{content:'';width:6px;height:6px;border-radius:50%;background:#fff}
+
+  /* Summary */
+  .listing-mini{display:flex;gap:14px;margin-bottom:20px;padding-bottom:20px;border-bottom:1px solid var(--border)}
+  .listing-mini img{width:80px;height:60px;border-radius:var(--r-sm);object-fit:cover;flex-shrink:0}
+  .listing-mini-title{font-family:'Fraunces',serif;font-size:15px;font-weight:500;margin-bottom:3px}
+  .listing-mini-loc{font-size:12px;color:var(--ink-lt)}
+  .sum-line{display:flex;justify-content:space-between;font-size:14px;margin-bottom:10px;color:var(--ink-mid)}
+  .sum-strike{text-decoration:line-through;color:var(--ink-lt)}
+  .sum-discount{color:var(--coral);font-weight:500}
+  .sum-total{display:flex;justify-content:space-between;font-size:16px;font-weight:600;padding-top:12px;border-top:1px solid var(--border);margin-top:4px}
+  .cashback-box{background:rgba(13,92,99,0.06);border-radius:var(--r-sm);padding:12px 14px;margin-top:14px;display:flex;gap:10px;align-items:flex-start;font-size:13px;color:var(--teal)}
+
+  .btn-book{width:100%;padding:15px;background:var(--coral);color:#fff;border:none;border-radius:var(--r-pill);font-size:16px;font-weight:600;cursor:pointer;margin-top:18px;transition:background 0.2s}
+  .btn-book:hover{background:var(--coral-dk)}
+  .btn-book:disabled{opacity:0.6;cursor:not-allowed}
+  .policy-note{font-size:12px;color:var(--ink-lt);text-align:center;margin-top:12px;line-height:1.6}
+
+  /* Steps */
+  .steps{display:flex;gap:0;margin-bottom:32px}
+  .step{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:500;color:var(--ink-lt)}
+  .step.active{color:var(--teal)}
+  .step.done{color:var(--green)}
+  .step-n{width:24px;height:24px;border-radius:50%;border:2px solid currentColor;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0}
+  .step-sep{flex:1;height:1px;background:var(--border);margin:0 8px}
+
+  @media(max-width:700px){
+    .layout{grid-template-columns:1fr}
+    nav{padding:0 16px}
+    .wrap{padding:24px 16px 60px}
+    .field-row{grid-template-columns:1fr}
+  }
+</style>
+</head>
+<body>
+<nav>
+  <a href="index.html" class="nav-logo">Stay<span>Local</span></a>
+  <div id="guestNav"></div>
+</nav>
+
+<div class="wrap">
+  <div class="steps">
+    <div class="step done" id="step1"><div class="step-n">✓</div> Listing</div>
+    <div class="step-sep"></div>
+    <div class="step active" id="step2"><div class="step-n">2</div> Your details</div>
+    <div class="step-sep"></div>
+    <div class="step" id="step3"><div class="step-n">3</div> Payment</div>
+    <div class="step-sep"></div>
+    <div class="step" id="step4"><div class="step-n">4</div> Confirmed</div>
+  </div>
+
+  <h1>Complete your booking</h1>
+
+  <div class="layout">
+    <div>
+      <!-- Guest details -->
+      <div class="card">
+        <h3>Your details</h3>
+        <div class="field-row">
+          <div class="field">
+            <label>First name</label>
+            <input id="guestFirst" type="text" placeholder="Budi">
+          </div>
+          <div class="field">
+            <label>Last name</label>
+            <input id="guestLast" type="text" placeholder="Santoso">
+          </div>
+        </div>
+        <div class="field">
+          <label>Email</label>
+          <input id="guestEmail" type="email" placeholder="budi@email.com">
+        </div>
+        <div class="field">
+          <label>Phone (WhatsApp)</label>
+          <input id="guestPhone" type="tel" placeholder="+62 812 3456 7890">
+        </div>
+        <div class="field">
+          <label>Special requests (optional)</label>
+          <input id="guestRequests" type="text" placeholder="Early check-in, extra pillows…">
+        </div>
+      </div>
+
+      <!-- Payment method -->
+      <div class="card">
+        <h3>Payment method</h3>
+        <div class="payment-options" id="paymentOptions">
+          <div class="pay-option selected" data-method="gopay" onclick="selectPayment(this)">
+            <div>
+              <div class="pay-name">GoPay</div>
+              <div class="pay-desc">Pay with your GoPay balance</div>
+            </div>
+            <div class="pay-radio"></div>
+          </div>
+          <div class="pay-option" data-method="shopeepay" onclick="selectPayment(this)">
+            <div>
+              <div class="pay-name">OVO</div>
+              <div class="pay-desc">Pay with OVO balance</div>
+            </div>
+            <div class="pay-radio"></div>
+          </div>
+          <div class="pay-option" data-method="other_qris" onclick="selectPayment(this)">
+            <div>
+              <div class="pay-name">Dana / QRIS</div>
+              <div class="pay-desc">Scan QR with any e-wallet</div>
+            </div>
+            <div class="pay-radio"></div>
+          </div>
+          <div class="pay-option" data-method="bca_va" onclick="selectPayment(this)">
+            <div>
+              <div class="pay-name">BCA Virtual Account</div>
+              <div class="pay-desc">Transfer via BCA mobile or ATM</div>
+            </div>
+            <div class="pay-radio"></div>
+          </div>
+          <div class="pay-option" data-method="credit_card" onclick="selectPayment(this)">
+            <div>
+              <div class="pay-name">Credit / Debit Card</div>
+              <div class="pay-desc">Visa, Mastercard, JCB</div>
+            </div>
+            <div class="pay-radio"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Order summary -->
+    <div>
+      <div class="card" id="summaryCard">
+        <div class="listing-mini">
+          <img id="sumPhoto" src="" onerror="this.src='https://images.unsplash.com/photo-1582268611958-ebfd161ef9cf?w=200&q=70'">
+          <div>
+            <div class="listing-mini-title" id="sumTitle">Loading…</div>
+            <div class="listing-mini-loc" id="sumLoc"></div>
+          </div>
+        </div>
+        <div class="sum-line"><span>Check-in</span><span id="sumCheckin">—</span></div>
+        <div class="sum-line"><span>Check-out</span><span id="sumCheckout">—</span></div>
+        <div class="sum-line"><span>Guests</span><span id="sumGuests">—</span></div>
+        <div class="sum-line"><span>Nights</span><span id="sumNights">—</span></div>
+        <div style="height:1px;background:var(--border);margin:12px 0"></div>
+        <div class="sum-line" id="sumBaseLine" style="display:none">
+          <span>Original price</span><span class="sum-strike" id="sumBase">—</span>
+        </div>
+        <div class="sum-line" id="sumDiscountLine" style="display:none">
+          <span class="sum-discount" id="sumDiscountLabel">Discount</span>
+          <span class="sum-discount" id="sumDiscountAmt">—</span>
+        </div>
+        <div class="sum-line"><span id="sumNightLabel">Price per night</span><span id="sumNightly">—</span></div>
+        <div class="sum-total"><span>Total</span><span id="sumTotal">—</span></div>
+        <div class="cashback-box" id="cashbackBox" style="display:none">
+          💰 <div><strong id="cashbackLabel"></strong><br><span style="color:var(--ink-mid)">Cashback credited after your stay</span></div>
+        </div>
+
+        <button class="btn-book" id="bookBtn" onclick="startBooking()">Pay now</button>
+        <p class="policy-note">Free cancellation up to 48 hours before check-in. You won't be charged until the host accepts.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="guest-auth.js"></script>
+<script>
+const NETLIFY_SITE = 'https://staylocalzahra.netlify.app';
+const GITHUB_REPO = 'Ryuga1981/Staylocal';
+
+// Read URL params
+const params = new URLSearchParams(window.location.search);
+const listingFile = params.get('file');
+const checkin = params.get('checkin');
+const checkout = params.get('checkout');
+const guests = parseInt(params.get('guests') || '1');
+
+let listing = null;
+let selectedPayment = 'gopay';
+let finalPrice = 0;
+let totalPrice = 0;
+let cashbackAmt = 0;
+
+function selectPayment(el) {
+  document.querySelectorAll('.pay-option').forEach(o => o.classList.remove('selected'));
+  el.classList.add('selected');
+  selectedPayment = el.dataset.method;
+}
+
+function parseFrontmatter(text) {
+  const match = text.match(/^---\n([\s\S]*?)\n---\n?([\s\S]*)$/);
+  if (!match) return {};
+  const obj = { _body: (match[2] || '').trim() };
+  const lines = match[1].split('\n');
+  let i = 0;
+  while (i < lines.length) {
+    const kv = lines[i].match(/^([a-zA-Z0-9_]+):\s*(.*)$/);
+    if (!kv) { i++; continue; }
+    let val = kv[2].trim();
+    if (val === '') {
+      const block = [];
+      let j = i + 1;
+      while (j < lines.length && /^\s+/.test(lines[j])) { block.push(lines[j]); j++; }
+      obj[kv[1]] = parseBlock(block);
+      i = j; continue;
+    }
+    if (val.startsWith('[') && val.endsWith(']')) obj[kv[1]] = val.slice(1,-1).split(',').map(s=>s.trim().replace(/^["']|["']$/g,'')).filter(Boolean);
+    else if (val==='true') obj[kv[1]]=true;
+    else if (val==='false') obj[kv[1]]=false;
+    else if (!isNaN(val)&&val!=='') obj[kv[1]]=Number(val);
+    else obj[kv[1]]=val.replace(/^["']|["']$/g,'');
+    i++;
+  }
+  return obj;
+}
+function parseBlock(lines) {
+  const items=[]; let cur=null;
+  lines.forEach(raw=>{
+    const line=raw.replace(/^\s+/,'');
+    if(line.startsWith('- ')){
+      if(cur)items.push(cur); cur={};
+      const rest=line.slice(2);
+      const kv=rest.match(/^([a-zA-Z0-9_]+):\s*(.*)$/);
+      if(kv)cur[kv[1]]=cv(kv[2]);
+      else if(rest.trim()){items.push(cv(rest.trim()));cur=null;}
+    } else if(cur){
+      const kv=line.match(/^([a-zA-Z0-9_]+):\s*(.*)$/);
+      if(kv)cur[kv[1]]=cv(kv[2]);
+    }
+  });
+  if(cur)items.push(cur);
+  return items;
+}
+function cv(v){v=v.trim();if(v==='true')return true;if(v==='false')return false;if(!isNaN(v)&&v!=='')return Number(v);return v.replace(/^["']|["']$/g,'');}
+
+function photoUrl(path) {
+  if (!path) return 'https://images.unsplash.com/photo-1582268611958-ebfd161ef9cf?w=400&q=70';
+  if (path.startsWith('/images/')) return NETLIFY_SITE + path;
+  return path;
+}
+
+function getActivePromo(l) {
+  const today = new Date().toISOString().slice(0,10);
+  return (l.promotions||[]).find(p => today >= p.start && today <= p.end);
+}
+
+async function loadListing() {
+  if (!listingFile) { alert('No listing specified'); return; }
+  try {
+    const res = await fetch(`https://api.github.com/repos/${GITHUB_REPO}/contents/_listings/${listingFile}`);
+    const meta = await res.json();
+    const r = await fetch(meta.download_url);
+    listing = parseFrontmatter(await r.text());
+    listing.photos = listing.photos || [];
+    listing.promotions = listing.promotions || [];
+    renderSummary();
+  } catch(e) {
+    alert('Failed to load listing: ' + e.message);
+  }
+}
+
+function renderSummary() {
+  const photo = listing.photos[0]?.url || null;
+  document.getElementById('sumPhoto').src = photoUrl(photo);
+  document.getElementById('sumTitle').textContent = listing.title || '';
+  document.getElementById('sumLoc').textContent = listing.location || '';
+  document.getElementById('sumCheckin').textContent = formatDate(checkin);
+  document.getElementById('sumCheckout').textContent = formatDate(checkout);
+  document.getElementById('sumGuests').textContent = guests + ' guest' + (guests>1?'s':'');
+
+  const nights = nightsBetween(checkin, checkout);
+  document.getElementById('sumNights').textContent = nights + ' night' + (nights>1?'s':'');
+
+  const base = Number(listing.price) || 0;
+  const promo = getActivePromo(listing);
+  finalPrice = promo ? base * (1 - promo.discountPercent/100) : base;
+  totalPrice = finalPrice * nights;
+  cashbackAmt = promo ? totalPrice * (promo.cashbackPercent/100) : 0;
+
+  if (promo && promo.discountPercent) {
+    document.getElementById('sumBaseLine').style.display = 'flex';
+    document.getElementById('sumBase').textContent = formatIDR(base);
+    document.getElementById('sumDiscountLine').style.display = 'flex';
+    document.getElementById('sumDiscountLabel').textContent = `${promo.discountPercent}% discount`;
+    document.getElementById('sumDiscountAmt').textContent = '−' + formatIDR((base - finalPrice) * nights);
+    document.getElementById('sumNightLabel').textContent = 'Discounted price/night';
+  }
+
+  document.getElementById('sumNightly').textContent = formatIDR(finalPrice);
+  document.getElementById('sumTotal').textContent = formatIDR(totalPrice);
+
+  if (cashbackAmt > 0) {
+    document.getElementById('cashbackBox').style.display = 'flex';
+    document.getElementById('cashbackLabel').textContent = `${promo.cashbackPercent}% cashback ≈ ${formatIDR(cashbackAmt)}`;
+  }
+
+  // Pre-fill guest details if logged in
+  const guest = getGuest();
+  if (guest) {
+    const [first, ...rest] = (guest.name || '').split(' ');
+    document.getElementById('guestFirst').value = first || '';
+    document.getElementById('guestLast').value = rest.join(' ') || '';
+    document.getElementById('guestEmail').value = guest.email || '';
+    document.getElementById('guestPhone').value = guest.phone || '';
+  }
+}
+
+async function startBooking() {
+  // Require login first
+  const guest = await requireGuestLogin();
+  if (!guest) return;
+
+  const first = document.getElementById('guestFirst').value.trim();
+  const last = document.getElementById('guestLast').value.trim();
+  const email = document.getElementById('guestEmail').value.trim();
+  const phone = document.getElementById('guestPhone').value.trim();
+
+  if (!first || !email || !phone) {
+    alert('Please fill in your first name, email, and phone number.');
+    return;
+  }
+
+  const btn = document.getElementById('bookBtn');
+  btn.disabled = true;
+  btn.textContent = 'Processing…';
+
+  // Update step indicator
+  document.getElementById('step3').classList.add('active');
+
+  try {
+    // Generate order ID
+    const orderId = 'SL-' + Date.now();
+    const nights = nightsBetween(checkin, checkout);
+
+    // Midtrans Snap — open payment modal
+    const snapToken = await getSnapToken({
+      orderId,
+      amount: Math.round(totalPrice),
+      customerName: first + ' ' + last,
+      customerEmail: email,
+      customerPhone: phone,
+      itemName: listing.title + ' (' + nights + ' nights)',
+      paymentMethod: selectedPayment,
+    });
+
+    window.snap.pay(snapToken, {
+      onSuccess: (result) => {
+        completeBooking({ orderId, result, first, last, email, phone });
+      },
+      onPending: (result) => {
+        completeBooking({ orderId, result, first, last, email, phone, pending: true });
+      },
+      onError: (result) => {
+        alert('Payment failed. Please try again.');
+        btn.disabled = false;
+        btn.textContent = 'Pay now';
+      },
+      onClose: () => {
+        btn.disabled = false;
+        btn.textContent = 'Pay now';
+      }
+    });
+  } catch(e) {
+    alert('Error: ' + e.message);
+    btn.disabled = false;
+    btn.textContent = 'Pay now';
+  }
+}
+
+async function getSnapToken({ orderId, amount, customerName, customerEmail, customerPhone, itemName, paymentMethod }) {
+  // In production this should be a server-side call.
+  // For now we use Midtrans Sandbox directly (client-side for testing only).
+  // Replace with your Netlify Function in production.
+  const res = await fetch('/.netlify/functions/create-payment', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ orderId, amount, customerName, customerEmail, customerPhone, itemName, paymentMethod })
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message || 'Payment setup failed');
+  }
+  const data = await res.json();
+  return data.token;
+}
+
+function completeBooking({ orderId, result, first, last, email, phone, pending }) {
+  // Save booking locally
+  const booking = {
+    id: orderId,
+    listingFile,
+    listingTitle: listing.title,
+    listingPhoto: listing.photos[0]?.url || null,
+    listingLocation: listing.location,
+    checkin, checkout, guests,
+    nights: nightsBetween(checkin, checkout),
+    totalPrice, cashbackAmt,
+    guestName: first + ' ' + last,
+    guestEmail: email,
+    guestPhone: phone,
+    paymentMethod: selectedPayment,
+    paymentStatus: pending ? 'pending' : 'paid',
+    paymentResult: result,
+    bookedAt: new Date().toISOString(),
+  };
+  saveBooking(booking);
+
+  // Redirect to confirmation
+  window.location.href = `booking-confirm.html?order=${orderId}`;
+}
+
+// Init
+renderGuestNav();
+loadListing();
+</script>
+</body>
+</html>
