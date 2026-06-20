@@ -1662,14 +1662,27 @@ function handleSearch() {
   renderListings();
   listings = originalListings;
 
-  document.getElementById('listings').scrollIntoView({ behavior: 'smooth' });
+  // Small delay so DOM updates before scrolling
+  setTimeout(() => {
+    document.getElementById('listings').scrollIntoView({ behavior: 'smooth' });
+  }, 100);
 }
 
-// Also trigger search on Enter key in where field
-document.addEventListener('DOMContentLoaded', () => {
+// Trigger search on Enter key in where field
+setTimeout(() => {
   const whereInput = document.getElementById('searchWhere');
   if (whereInput) whereInput.addEventListener('keydown', e => { if (e.key==='Enter') handleSearch(); });
-});
+  const checkinInput = document.getElementById('searchCheckin');
+  if (checkinInput) checkinInput.addEventListener('change', () => {
+    // Auto set checkout to next day if not set
+    const checkout = document.getElementById('searchCheckout');
+    if (!checkout.value && checkinInput.value) {
+      const next = new Date(checkinInput.value);
+      next.setDate(next.getDate() + 1);
+      checkout.value = next.toISOString().slice(0,10);
+    }
+  });
+}, 500);
 
 // ── SCROLL REVEAL ──
 function observeReveal() {
