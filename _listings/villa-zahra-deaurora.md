@@ -6,17 +6,21 @@ lat:
 lng: 
 price: 6800000
 bedrooms: 5
-bathrooms: undefined
+bathrooms: 0
 guests: 10
 rating: 5
 available: true
 description: 5 bedrooms villa, heated pool, billiard, PS5
 amenities: []
 photos:
-promotions:
-  - start: 2026-06-20
-    end: 2026-07-31
-    discountPercent: 0
-    cashbackPercent: 10
-blockedDates: [2026-06-27, 2026-07-01, 2026-07-02, 2026-07-07]
+  - url: /images/1781918341577-whatsapp-image-2026-06-16-at-102423-4.jpeg
+    category: outdoor
+  - url: /images/1781918343690-whatsapp-image-2026-06-16-at-102423-1.jpeg
+    category: living room
+  - url: /images/1781918346016-whatsapp-image-2026-06-16-at-102423-2.jpeg
+    category: living room
+  - url: /images/1781918347866-c4930618-2ede-45be-88c5-cd8d02ddb3a3.jpg
+    category: facilities
+  - url: /images/1781918349713-whatsapp-image-2026-06-16-at-102423-3.jpeg
+    category: outdoor
 ---
