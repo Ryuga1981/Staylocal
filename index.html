@@ -916,17 +916,28 @@
     <p class="hero-sub">8+ million homes in Indonesia, Thailand, Vietnam,<br>the Philippines and beyond — priced in your currency.</p>
 
     <div class="search-bar">
-      <div class="search-field">
+      <div class="search-field" style="cursor:default">
         <span class="search-label">Where</span>
-        <span class="search-value">Bali, Ubud, Bangkok…</span>
+        <input id="searchWhere" list="whereSuggestions" placeholder="Bali, Ubud, Bangkok…" style="border:none;outline:none;font-size:14px;color:var(--ink-lt);background:transparent;width:100%;font-family:inherit">
+        <datalist id="whereSuggestions">
+          <option value="Bali"></option><option value="Bandung"></option>
+          <option value="Bangkok"></option><option value="Phuket"></option>
+          <option value="Ubud"></option><option value="Seminyak"></option>
+          <option value="Canggu"></option><option value="Hanoi"></option>
+          <option value="Manila"></option><option value="Kuala Lumpur"></option>
+        </datalist>
       </div>
-      <div class="search-field">
+      <div class="search-field" style="cursor:default">
         <span class="search-label">Check in</span>
-        <span class="search-value">Add dates</span>
+        <input id="searchCheckin" type="date" style="border:none;outline:none;font-size:14px;color:var(--ink-lt);background:transparent;width:100%;font-family:inherit">
       </div>
-      <div class="search-field">
+      <div class="search-field" style="cursor:default">
+        <span class="search-label">Check out</span>
+        <input id="searchCheckout" type="date" style="border:none;outline:none;font-size:14px;color:var(--ink-lt);background:transparent;width:100%;font-family:inherit">
+      </div>
+      <div class="search-field" style="cursor:default;border-right:none">
         <span class="search-label">Guests</span>
-        <span class="search-value">Add guests</span>
+        <input id="searchGuests" type="number" min="1" max="30" placeholder="2" style="border:none;outline:none;font-size:14px;color:var(--ink-lt);background:transparent;width:60px;font-family:inherit">
       </div>
       <button class="search-btn" onclick="handleSearch()">
         <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
@@ -1593,8 +1604,72 @@ function scrollToAI() {
 }
 
 function handleSearch() {
+  const where = (document.getElementById('searchWhere').value || '').trim().toLowerCase();
+  const checkin = document.getElementById('searchCheckin').value;
+  const checkout = document.getElementById('searchCheckout').value;
+  const guests = parseInt(document.getElementById('searchGuests').value || '0');
+
+  // Update section header
+  const sectionTitle = document.querySelector('.section-title');
+  if (sectionTitle) {
+    sectionTitle.innerHTML = where
+      ? `Results for <em>${document.getElementById('searchWhere').value}</em>`
+      : `Trending in <em>Bali</em>`;
+  }
+
+  // Filter listings
+  let filtered = [...listings];
+
+  if (where) {
+    filtered = filtered.filter(l =>
+      (l.location||'').toLowerCase().includes(where) ||
+      (l.title||'').toLowerCase().includes(where) ||
+      (l.region||'').toLowerCase().includes(where)
+    );
+  }
+
+  if (guests > 0) {
+    filtered = filtered.filter(l => (Number(l.guests) || 99) >= guests);
+  }
+
+  if (checkin && checkout) {
+    filtered = filtered.filter(l => {
+      const blocked = (l.blockedDates||[]).concat(l.bookedDates||[]);
+      let d = new Date(checkin);
+      const end = new Date(checkout);
+      while (d < end) {
+        if (blocked.includes(d.toISOString().slice(0,10))) return false;
+        d.setDate(d.getDate()+1);
+      }
+      return true;
+    });
+  }
+
+  // Render filtered results
+  const grid = document.getElementById('listingsGrid');
+  if (!filtered.length) {
+    grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:60px 20px;color:var(--ink-lt)">
+      <div style="font-size:36px;margin-bottom:12px">🔍</div>
+      <div style="font-size:16px;font-weight:500;margin-bottom:8px">No listings found</div>
+      <div style="font-size:14px">Try a different location or dates</div>
+    </div>`;
+    return;
+  }
+
+  // Temporarily set listings to filtered for render
+  const originalListings = listings;
+  listings = filtered;
+  renderListings();
+  listings = originalListings;
+
   document.getElementById('listings').scrollIntoView({ behavior: 'smooth' });
 }
+
+// Also trigger search on Enter key in where field
+document.addEventListener('DOMContentLoaded', () => {
+  const whereInput = document.getElementById('searchWhere');
+  if (whereInput) whereInput.addEventListener('keydown', e => { if (e.key==='Enter') handleSearch(); });
+});
 
 // ── SCROLL REVEAL ──
 function observeReveal() {
