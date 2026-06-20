@@ -1617,23 +1617,16 @@ function handleSearch() {
       : `Trending in <em>Bali</em>`;
   }
 
-  // Filter listings
-  let filtered = [...listings];
+  // Filter listings — coerce all fields to string first
+  let filtered = listings.filter(l => {
+    const loc = String(l.location || '').toLowerCase();
+    const title = String(l.title || '').toLowerCase();
+    const region = String(l.region || '').toLowerCase();
+    const cap = Number(l.guests) || 99;
 
-  if (where) {
-    filtered = filtered.filter(l =>
-      (l.location||'').toLowerCase().includes(where) ||
-      (l.title||'').toLowerCase().includes(where) ||
-      (l.region||'').toLowerCase().includes(where)
-    );
-  }
-
-  if (guests > 0) {
-    filtered = filtered.filter(l => (Number(l.guests) || 99) >= guests);
-  }
-
-  if (checkin && checkout) {
-    filtered = filtered.filter(l => {
+    if (where && !loc.includes(where) && !title.includes(where) && !region.includes(where)) return false;
+    if (guests > 0 && cap < guests) return false;
+    if (checkin && checkout) {
       const blocked = (l.blockedDates||[]).concat(l.bookedDates||[]);
       let d = new Date(checkin);
       const end = new Date(checkout);
@@ -1641,11 +1634,10 @@ function handleSearch() {
         if (blocked.includes(d.toISOString().slice(0,10))) return false;
         d.setDate(d.getDate()+1);
       }
-      return true;
-    });
-  }
+    }
+    return true;
+  });
 
-  // Render filtered results
   const grid = document.getElementById('listingsGrid');
   if (!filtered.length) {
     grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:60px 20px;color:var(--ink-lt)">
@@ -1653,19 +1645,18 @@ function handleSearch() {
       <div style="font-size:16px;font-weight:500;margin-bottom:8px">No listings found</div>
       <div style="font-size:14px">Try a different location or dates</div>
     </div>`;
-    return;
+  } else {
+    const saved = listings;
+    listings = filtered;
+    renderListings();
+    listings = saved;
   }
 
-  // Temporarily set listings to filtered for render
-  const originalListings = listings;
-  listings = filtered;
-  renderListings();
-  listings = originalListings;
-
-  // Small delay so DOM updates before scrolling
+  // Scroll after a short delay to let DOM update
   setTimeout(() => {
-    document.getElementById('listings').scrollIntoView({ behavior: 'smooth' });
-  }, 100);
+    const el = document.getElementById('listings');
+    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }, 150);
 }
 
 // Trigger search on Enter key in where field
